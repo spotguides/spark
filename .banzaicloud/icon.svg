@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 401.258 214.85">
+  <defs>
+    <style>
+      .spark-cls-1 {
+        fill: #e25a1c;
+      }
+
+      .spark-cls-1, .spark-cls-2, .spark-cls-3 {
+        stroke: rgba(255,255,255,0.37);
+      }
+
+      .spark-cls-1, .spark-cls-2 {
+        fill-rule: evenodd;
+      }
+
+      .spark-cls-2, .spark-cls-3 {
+        fill: #3c3a3e;
+      }
+
+      .spark-cls-4 {
+        filter: url(#path4191);
+      }
+
+      .spark-cls-5 {
+        filter: url(#path4189);
+      }
+
+      .spark-cls-6 {
+        filter: url(#path4187);
+      }
+
+      .spark-cls-7 {
+        filter: url(#path4185);
+      }
+
+      .spark-cls-8 {
+        filter: url(#path4183);
+      }
+
+      .spark-cls-9 {
+        filter: url(#path4181);
+      }
+
+      .spark-cls-10 {
+        filter: url(#path4179);
+      }
+
+      .spark-cls-11 {
+        filter: url(#path4177);
+      }
+
+      .spark-cls-12 {
+        filter: url(#path4175);
+      }
+
+      .spark-cls-13 {
+        filter: url(#path4173);
+      }
+
+      .spark-cls-14 {
+        filter: url(#path4171);
+      }
+
+      .spark-cls-15 {
+        filter: url(#path4169);
+      }
+
+      .spark-cls-16 {
+        filter: url(#path4167);
+      }
+    </style>
+    <filter id="path4167" x="244.698" y="0" width="156.56" height="133.742" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4169" x="269.631" y="82.857" width="83.777" height="109.715" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-2"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4171" x="61.743" y="106.028" width="96.192" height="108.822" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-3"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4173" x="0" y="80.212" width="86.247" height="114.777" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-4"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-4"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4175" x="151.045" y="106.045" width="88.856" height="88.326" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-5"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-5"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4177" x="229.616" y="107.879" width="54.542" height="84.589" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-6"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-6"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4179" x="343.78" y="171.082" width="30.568" height="21.386" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-7"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-7"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4181" x="86.128" y="72.199" width="32.432" height="32.966" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-8"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-8"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4183" x="115.283" y="72.199" width="28.716" height="32.966" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-9"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-9"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4185" x="135.724" y="72.199" width="32.432" height="32.966" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-10"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-10"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4187" x="163.842" y="71.874" width="28.924" height="33.615" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-11"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-11"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4189" x="188.083" y="72.199" width="33.744" height="32.966" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-12"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-12"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="path4191" x="217.747" y="72.199" width="27.68" height="32.966" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="2" result="blur-13"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite operator="in" in2="blur-13"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="git_commit" transform="translate(5.634 207.35)">
+    <g id="g4165">
+      <g class="spark-cls-16" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4167-2" data-name="path4167" class="spark-cls-1" d="M355.027-100.01c-.335-.715-.486-1.076-.669-1.422q-7.294-13.867-14.62-27.718a1.692,1.692,0,0,1,.244-2.269q11.6-13.553,23.13-27.169a2.439,2.439,0,0,0,.617-1.223c-2.253.589-4.505,1.17-6.755,1.766q-14.018,3.714-28.029,7.455a1.287,1.287,0,0,1-1.7-.742q-7.959-13.3-15.973-26.558a3.624,3.624,0,0,0-1.159-1.292c-.429,2.361-.865,4.721-1.285,7.084q-2.227,12.51-4.445,25.024c-.161.9-.384,1.8-.46,2.7-.075.861-.516,1.179-1.3,1.424q-16.521,5.186-33.019,10.436a3.655,3.655,0,0,0-1.474.821L295.281-120.9c-.332.264-.549.467-.793.626-5.628,3.641-11.264,7.268-16.878,10.928a1.8,1.8,0,0,1-1.96.16c-6.721-3.027-13.469-6-20.2-9a20.835,20.835,0,0,1-7.859-5.732c-4.786-5.855-3.841-12.517,2.536-16.585a30.1,30.1,0,0,1,6.82-3.1c10.786-3.514,21.614-6.9,32.436-10.3a1.843,1.843,0,0,0,1.5-1.673q2.162-12.523,4.441-25.025c.8-4.457,1.233-9.03,3.4-13.115a22,22,0,0,1,3.019-4.425c4.3-4.768,10.291-4.952,14.834-.41a28.22,28.22,0,0,1,3.99,5.2q7.508,12.238,14.824,24.6a1.608,1.608,0,0,0,2.172.881q18.1-4.853,36.228-9.611a17.043,17.043,0,0,1,7.569-.421c5.568,1.042,8,5.281,6.117,10.659a20.573,20.573,0,0,1-4,6.475q-12.643,14.869-25.3,29.724a1.731,1.731,0,0,0-.228,2.295q7.568,14.264,15.066,28.566a15.882,15.882,0,0,1,2.145,7.263,11.707,11.707,0,0,1-10.21,11.693,21.177,21.177,0,0,1-9.5-1.18q-11.349-3.508-22.73-6.919a1.3,1.3,0,0,1-1.1-1.243c-.872-5.337-1.824-10.662-2.744-15.992a3.415,3.415,0,0,1,.04-.631l26.1,7.2" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-15" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4169-2" data-name="path4169" class="spark-cls-2" d="M340.275-22.279c-6.824-.012-13.647-.044-20.473-.016a1.979,1.979,0,0,1-1.914-1.026q-12.118-18.458-24.3-36.873c-.259-.391-.534-.769-.992-1.426-1.746,13.27-3.453,26.244-5.163,39.25h-17.87c.209-1.741.392-3.424.612-5.1q2.617-19.986,5.247-39.97,2.509-19.095,5.038-38.188a1.65,1.65,0,0,1,.612-1.061q9.223-6.014,18.489-11.961a2.773,2.773,0,0,1,.534-.156c-1.866,14.234-3.719,28.356-5.571,42.479.074.05.146.1.22.151l29.25-32.422c.286,1.65.534,3.062.776,4.475.694,4.046,1.359,8.1,2.1,12.135a1.918,1.918,0,0,1-.609,1.886q-9.39,9.827-18.738,19.692c-.272.287-.534.584-.844.924.2.319.369.625.57.909Q323.4-45.908,339.557-23.25a6.4,6.4,0,0,0,.717.732v.24" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-14" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4171-2" data-name="path4171" class="spark-cls-2" d="M128.455-61.561a41.792,41.792,0,0,0-1.086-5.348c-2.992-9.234-12.467-14.3-22.274-12.015A24.834,24.834,0,0,0,85.537-56.985,17.822,17.822,0,0,0,97.216-38.107c6.55,2.366,12.856,1.376,18.711-2.135,7.761-4.656,11.97-11.569,12.528-21.32ZM81.213-27.24c-.531,3.973-1.037,7.716-1.53,11.463Q78.7-8.307,77.749-.834c-.073.582-.25.838-.874.834-4.909-.02-9.817-.015-14.726-.022a2.647,2.647,0,0,1-.49-.136c.3-2.351.585-4.709.894-7.065Q64.178-19.614,65.816-32c1.257-9.443,2.253-18.932,3.862-28.315,2.851-16.614,16.945-30.932,33.485-34.5,9.589-2.068,18.766-1.111,27.137,4.284A30.272,30.272,0,0,1,144.529-67.52c1.544,13.888-3.568,25.417-13.432,34.954A41.686,41.686,0,0,1,107.93-20.982c-9.211,1.389-17.868-.147-25.638-5.577-.286-.2-.59-.373-1.079-.682" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-13" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4173-2" data-name="path4173" class="spark-cls-2" d="M73.214-106.189,57.072-94.173c-.859-1.355-1.628-2.705-2.527-3.962-2.312-3.232-5.185-5.646-9.362-5.939a10.467,10.467,0,0,0-8.81,3.462,6.16,6.16,0,0,0-.415,8.134c2.176,2.848,4.557,5.549,6.989,8.186,4.031,4.37,8.244,8.573,12.249,12.966,3.644,4,6.549,8.481,7.446,13.946a28.416,28.416,0,0,1-3.3,18.394C53.652-28.419,44.7-22.289,32.874-20.37a34.72,34.72,0,0,1-15.523-.822C10.59-23.183,5.884-27.614,2.857-33.871,1.788-36.083.97-38.417,0-40.789l17.5-9.368c.2.486.346.891.536,1.27a52.314,52.314,0,0,0,3.042,5.939c3.654,5.434,9.557,7.087,15.546,4.4a17.137,17.137,0,0,0,4.281-2.782c3.859-3.425,4.583-8.194,1.726-12.5a60.962,60.962,0,0,0-5.692-6.915c-4.775-5.3-9.745-10.437-14.41-15.836A25.016,25.016,0,0,1,16.44-89.629,22.368,22.368,0,0,1,19.6-104.788c7.041-11.388,17.271-17.313,30.8-16.822,7.715.28,13.858,3.887,18.626,9.881,1.411,1.773,2.733,3.617,4.179,5.54" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-12" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4175-2" data-name="path4175" class="spark-cls-2" d="M203.93-45.05c-.9,6.86-1.744,13.38-2.624,19.9a1.331,1.331,0,0,1-.585.91c-13.32,6.169-30.86,5.308-41.8-7.115-5.878-6.674-8.344-14.6-7.975-23.408.852-20.4,17.766-38.208,37.992-40.7,11.818-1.454,22.181,1.738,30.188,10.917a30.409,30.409,0,0,1,7.6,21.963c-.245,5.444-1.1,10.864-1.776,16.283-.96,7.675-2.009,15.34-3.023,23.009-.036.273-.091.543-.152.889H205.844c.212-1.762.406-3.487.63-5.208,1.154-8.858,2.423-17.7,3.434-26.575.63-5.526.234-11.011-2.294-16.13-2.689-5.44-7.2-8.317-13.125-8.946a24.881,24.881,0,0,0-26.561,19.3c-1.729,7.971,1,15.611,7.344,19.835,6.188,4.117,12.814,4.13,19.556,1.46a25.565,25.565,0,0,0,9.1-6.384" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-11" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4177-2" data-name="path4177" class="spark-cls-2" d="M271.029-93.915c-.728,5.525-1.444,10.967-2.176,16.522-3.369,0-6.672-.02-9.975.007a6.284,6.284,0,0,0-5.923,4.248,17.3,17.3,0,0,0-.566,3.049q-2.514,19.029-5,38.06c-.42,3.2-.829,6.4-1.249,9.647H229.55c.31-2.44.6-4.8.911-7.158q1.618-12.334,3.25-24.661c.944-7.113,1.785-14.241,2.9-21.328,1.49-9.5,10.941-17.936,20.528-18.353,4.574-.2,9.164-.034,13.894-.034" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-10" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4179-2" data-name="path4179" class="spark-cls-3" d="M359.829-22.382v-7h-.04l-2.747,7h-.876l-2.747-7h-.041v7h-1.384v-8.386h2.136l2.5,6.371,2.464-6.371h2.117v8.386h-1.385Zm-12.173-7.265v7.265h-1.384v-7.265h-2.626v-1.121h6.636v1.121h-2.626" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-9" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4181-2" data-name="path4181" class="spark-cls-3" d="M95.432-117.965h4.112l-.97-6.226Zm4.758,4.022H93.348l-2.173,4.257H86.33l10.688-19.966h4.671l3.639,19.966h-4.492l-.645-4.257" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-8" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4183-2" data-name="path4183" class="spark-cls-3" d="M124.669-125.63h-2.437l-.82,4.609h2.436a2.552,2.552,0,0,0,2.645-2.789A1.669,1.669,0,0,0,124.669-125.63Zm-5.9-4.021h6.4c3.348,0,5.7,2,5.7,5.43,0,4.317-3.054,7.223-7.4,7.223h-2.759l-1.293,7.313h-4.168l3.522-19.966" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-7" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4185-2" data-name="path4185" class="spark-cls-3" d="M145.027-117.965h4.113l-.97-6.226Zm4.758,4.022h-6.841l-2.174,4.257h-4.845l10.688-19.966h4.67l3.64,19.966h-4.491l-.646-4.257" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-6" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4187-2" data-name="path4187" class="spark-cls-3" d="M176.834-110.391a10.944,10.944,0,0,1-4.521,1.029c-5.284,0-8.6-3.965-8.6-8.928A11.833,11.833,0,0,1,175.4-129.976a8.706,8.706,0,0,1,4.2,1.027l-.588,4.788a5.385,5.385,0,0,0-4.053-1.645,7.167,7.167,0,0,0-6.87,7.106c0,2.906,1.82,5.17,4.7,5.17a7.48,7.48,0,0,0,4.609-1.615l-.559,4.755" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-5" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4189-2" data-name="path4189" class="spark-cls-3" d="M202.315-117.731h-8.691l-1.411,8.046h-4.167l3.523-19.966h4.17l-1.409,7.9h8.691l1.408-7.9h4.17l-3.521,19.966h-4.17l1.409-8.046" transform="translate(5.63 207.35)"/>
+      </g>
+      <g class="spark-cls-4" transform="matrix(1, 0, 0, 1, -5.63, -207.35)">
+        <path id="path4191-2" data-name="path4191" class="spark-cls-3" d="M217.606-109.685l3.521-19.966H232.2l-.705,4.021h-6.9l-.7,3.877h6.34l-.7,4.022h-6.344l-.7,4.023h6.9l-.705,4.023H217.606" transform="translate(5.63 207.35)"/>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,64 @@
+pipeline:
+
+  install_history_server_bucket_secrets:
+    image: banzaicloud/ci-pipeline-client:0.8
+    action: InstallSecret
+    clusterSecret:
+      name:
+      namespace: default
+      merge: true
+      spec: []
+      convertToPreferredFormat: true
+
+  install_history_server_auth_secrets:
+    image: banzaicloud/ci-pipeline-client:0.8
+    action: InstallSecret
+    clusterSecret:
+      name:
+      namespace: default
+      merge: true
+      spec: []
+
+  package_application:
+    image: lachlanevenson/k8s-helm:latest
+    commands:
+      - helm init -c
+      - helm package ./.banzaicloud/charts/spotguide-spark
+
+  deploy_application:
+    image: banzaicloud/ci-pipeline-client:0.8
+    action: EnsureDeployment
+    deployment:
+      name: './spotguide-spark-1.0.0.tgz'
+      releaseName: '{{ .CICD_REPO_NAME }}'
+      values:
+        historyServer:
+          enabled:
+        banzaicloud:
+          spark:
+            image:
+              name:
+            executor:
+              num:
+          bucket:
+            storageAccountName:
+        spark:
+          monitoring:
+            enabled:
+            jmxCollector:
+            metricsProperties:
+          spark-hs:
+            sparkEventLogStorage:
+              logDirectory:
+              cloudProvider:
+              secretName:
+            ingress:
+              enabled: true
+              annotations:
+                kubernetes.io/ingress.class: traefik
+                traefik.ingress.kubernetes.io/auth-secret:
+                traefik.frontend.rule.type: PathPrefixStrip
+                traefik.ingress.kubernetes.io/auth-type: basic
+                ingress.kubernetes.io/ssl-redirect: "true"
+              hosts:
+                - "shs-{{.CICD_REPO_NAME}}-{{.CLUSTER_NAME}}.{{.ORG_NAME}}.{{.DOMAIN_NAME}}"

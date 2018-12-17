@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Spotguide chart for spark
+name: spotguide-spark
+version: 1.0.0

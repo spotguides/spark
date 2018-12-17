@@ -1,0 +1,143 @@
+name: 'Spark with History Server'
+description: 'TODO write a description'
+tags: ['Spark', 'History Server', 'Big Data', 'Streaming']
+resources:
+  sumCpu: 8
+  sumMem: 12
+  filters: []
+  sameSize: false
+  onDemandPct: 30
+  minNodes: 3
+  maxNodes: 4
+questions:
+- type: pipeline
+  dataType: enum
+  key: spark_version_enum
+  label: 'Spark Version'
+  description: ''
+  default: '2.3.2'
+  required: true
+  group: Spark
+  options:
+  - '2.3.2'
+  - '2.4.0'
+  targets:
+    - deploy_application.deployment.values.banzaicloud.spark.version
+- type: pipeline
+  dataType: string
+  label: 'Spark image name'
+  default: 'banzaicloud/spark:v2.3.2.146'
+  group: Spark
+  showIf:
+    properties:
+      spark_version_enum:
+        const: '2.3.2'
+  targets:
+    - deploy_application.deployment.values.banzaicloud.spark.image.name
+- type: pipeline
+  dataType: string
+  label: 'Spark image name'
+  default: 'banzaicloud/spark:v2.4.0.147'
+  group: Spark
+  showIf:
+    properties:
+      spark_version_enum:
+        const: '2.4.0'
+  targets:
+    - deploy_application.deployment.values.banzaicloud.spark.image.name
+- type: pipeline
+  dataType: string
+  label: 'Number of spark executors'
+  default: '2'
+  group: Spark
+  targets:
+    - deploy_application.deployment.values.banzaicloud.spark.executor.num
+- type: pipeline
+  dataType: boolean
+  label: "Monitoring"
+  required: true
+  group: Monitoring
+  key: monitoring
+  default: true
+  targets:
+    - deploy_application.deployment.values.spark.monitoring.enabled
+- type: pipeline
+  dataType: string
+  controlType: code
+  config:
+    mode: properties
+  label: 'Metrics properties'
+  required: false
+  default: |
+    # Enable Prometheus for all instances by class name
+    *.sink.prometheus.class=com.banzaicloud.spark.metrics.sink.PrometheusSink
+    # Prometheus pushgateway address
+    *.sink.prometheus.pushgateway-address=prometheus-pushgateway.pipeline-system:9091
+    *.sink.prometheus.pushgateway-enable-timestamp=true
+    *.sink.prometheus.enable-dropwizard-collector=true
+    *.sink.prometheus.enable-jmx-collector=false
+  group: Monitoring
+  showIf:
+    properties:
+      monitoring:
+        const: true
+  targets:
+    - deploy_application.deployment.values.spark.monitoring.metricsProperties
+- type: pipeline
+  dataType: string
+  controlType: code
+  config:
+    mode: yaml
+  label: 'JMX collector'
+  required: false
+  default: |
+    lowercaseOutputName: false
+    lowercaseOutputLabelNames: false
+    whitelistObjectNames: ["*:*"]
+  group: Monitoring
+  showIf:
+    properties:
+      monitoring:
+        const: true
+  targets:
+    - deploy_application.deployment.values.spark.monitoring.jmxCollector
+- type: pipeline
+  dataType: boolean
+  default: true
+  label: 'History Server'
+  required: true
+  key: historyServer
+  group: History Server
+  targets:
+    - deploy_application.deployment.values.historyServer.enabled
+- type: secret
+  dataType: htpasswd
+  name: historyserverpass
+  group: History Server
+  label: 'History Server Auth Creds'
+  required: true
+  showIf:
+    properties:
+      historyServer:
+        const: true
+  targets:
+    - name: deploy_application.deployment.values.banzaicloud.secret.historyServer.name
+    - name: install_history_server_auth_secrets.clusterSecret.name
+    - name: deploy_application.deployment.values.spark.spark-hs.ingress.annotations["traefik.ingress.kubernetes.io/auth-secret"]
+- type: bucket
+  name: sparkeventlogs
+  label: 'Bucket Name'
+  description: 'This bucket will be used to store spark logs.'
+  required: true
+  group: History Server
+  showIf:
+    properties:
+      historyServer:
+        const: true
+  targets:
+    - name: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.logDirectory
+    - cloud: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.cloudProvider
+    - secret.accessName: install_history_server_bucket_secrets.clusterSecret.name
+    - secret.accessName: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.secretName
+    - aks.storageAccount: deploy_application.deployment.values.banzaicloud.bucket.storageAccountName
+    - aks.storageAccount: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.azureStorageAccountName

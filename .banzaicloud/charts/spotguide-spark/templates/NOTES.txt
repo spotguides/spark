@@ -1,0 +1,288 @@
+Congratulations, you have deployed Spark Spotguide to Kubernetes! Your release is named {{ .Release.Name }}.
+
+> Please note that if security scan enabled for your cluster, running spark for the first time may take longer than usual!
+Please be patient.
+
+### Spark distribution
+
+To run spark submit from your machine you need a built spark distribution. To ease the process we prebuilt a spark for you.
+Please download it from here:
+
+{{- $sparkVersionLen := len .Values.banzaicloud.spark.image.name }}
+{{- $sparkVersion := substr 18 $sparkVersionLen .Values.banzaicloud.spark.image.name }}
+```
+curl https://s3-us-west-2.amazonaws.com/banzaicloud-spark-distro/spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz --output spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz
+tar -xzf spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz
+cd spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}/
+```
+
+### Spark Submit
+
+To run the below mentioned commands the kubernetes config needs to be set properly. To do that run the following commands:
+
+### Get the Kubernetes config
+Download the cluster config from the cluster details page:
+{{- if .Values.banzaicloud.cluster.id }}
+[Cluster details]({{ $.Values.banzaicloud.organization.name }}/cluster/{{ .Values.banzaicloud.cluster.id }}/details)
+{{- end }}
+
+```
+export KUBECONFIG=<path to the file which contains the fetched config/downloaded before>
+```
+
+{{- if  eq (.Values.banzaicloud.cluster.distribution) "eks" }}
+In case of Amazon EKS a small authenticator program is required to be able to access the cluster. It can be installed using the following command:
+
+Using Go:
+```
+go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-authenticator
+```
+
+Using the prebuilt binary:
+
+Follow this documentation on Amazon how to get and install a prebuilt binary:
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
+Search for `To install aws-iam-authenticator for Amazon EKS`.
+
+{{- end }}
+
+Small tool which interacts with your Kubernetes cluster must be installed. Please follow the following page to install it https://kubernetes.io/docs/tasks/tools/install-kubectl/
+
+To run your application in spark running on Kubernetes. A couple of extra arguments are required to `spark-submit`.
+
+Kubernetes master address must be retrieved, run the following command to retrieve it:
+
+```
+$ kubectl cluster-info | grep "Kubernetes master"
+```
+
+Spark-submit also requires some credentials to be able to speak with the Kubernetes master. 
+
+{{- if and (not (eq .Values.banzaicloud.cluster.distribution "gke")) (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
+
+These credentials can be parsed from kubernetes config. These values are keys so they are base64 encoded remember to decode before saving them.
+
+```
+echo $KUBECONFIG | xargs cat | grep certificate-authority-data
+echo $KUBECONFIG | xargs cat | grep client-key-data
+echo $KUBECONFIG | xargs cat | grep client-certificate-data
+```
+Save all these to files like `certificate-authority-data.pem`, `client-key-data.pem`, `client-certificate-data.pem`.
+
+Remember these files are base64 encoded so decode them first before saving them.
+
+```
+echo '<copied values>' | base64 -D
+```
+{{- if .Values.historyServer.enabled }}
+{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+{{- if  eq $cloudProvider "azure" }}
+- [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
+{{- end}}
+{{- if  eq $cloudProvider "amazon" }}
+- [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }})
+{{- end}}
+{{- end}}
+
+```
+bin/spark-submit \
+--master k8s://<<kubernetes master ip>> \
+--deploy-mode cluster \
+--class org.apache.spark.examples.SparkPi \
+--conf spark.app.name=spark-pi \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+--conf spark.local.dir=/tmp/spark-locals \
+--conf spark.kubernetes.docker.image.pullPolicy=Always \
+--conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.name }} \
+--conf spark.kubernetes.authenticate.submission.caCertFile=<your path to certificate-authority-data.pem> \
+--conf spark.kubernetes.authenticate.submission.clientKeyFile=<your path to client-key-data.pem> \
+--conf spark.kubernetes.authenticate.submission.clientCertFile=<your path to client-certificate-data.pem> \
+--conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+--conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+{{- if .Values.historyServer.enabled }}
+{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+--conf spark.eventLog.enabled=true \
+{{- if  eq $cloudProvider "amazon" }}
+--conf spark.hadoop.fs.s3a.access.key=<amazon access key> \
+--conf spark.hadoop.fs.s3a.secret.key=<amazon access secret> \
+--conf spark.eventLog.dir="s3a://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
+{{- else if eq $cloudProvider "google"}}
+--conf spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "alibaba"}}
+--conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "oracle"}}
+--conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "azure"}}
+--conf spark.hadoop.fs.azure.account.key.{{ .Values.banzaicloud.bucket.storageAccountName }}.blob.core.windows.net=<storageAccountKey secret> \
+{{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
+--conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
+{{- end}}
+{{- end}}
+--conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
+local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+```
+
+{{- end }}
+
+{{- if eq (.Values.banzaicloud.cluster.distribution) "gke" }}
+
+{{- if .Values.historyServer.enabled }}
+{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+{{- if  eq $cloudProvider "azure" }}
+- [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
+{{- end}}
+{{- if  eq $cloudProvider "amazon" }}
+- [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }})
+{{- end}}
+{{- end}}
+
+```
+bin/spark-submit \
+--master k8s://<<kubernetes master ip>> \
+--deploy-mode cluster \
+--class org.apache.spark.examples.SparkPi \
+--conf spark.app.name=spark-pi \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+--conf spark.local.dir=/tmp/spark-locals \
+--conf spark.kubernetes.docker.image.pullPolicy=Always \
+--conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.name }} \
+--conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+--conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+{{- if .Values.historyServer.enabled }}
+{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+--conf spark.eventLog.enabled=true \
+{{- if  eq $cloudProvider "amazon" }}
+--conf spark.hadoop.fs.s3a.access.key=<amazon access key> \
+--conf spark.hadoop.fs.s3a.secret.key=<amazon access secret> \
+--conf spark.eventLog.dir="s3a://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
+{{- else if eq $cloudProvider "google"}}
+--conf spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "alibaba"}}
+--conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "oracle"}}
+--conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "azure"}}
+--conf spark.hadoop.fs.azure.account.key.{{ .Values.banzaicloud.bucket.storageAccountName }}.blob.core.windows.net=<storageAccountKey secret> \
+{{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
+--conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
+{{- end}}
+{{- end}}
+--conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
+local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+```
+
+{{- end }}
+
+{{- if  eq (.Values.banzaicloud.cluster.distribution) "eks" }}
+
+Get your aws credentials from the kubernetes config you downloaded earlier:
+These values will needed for spark-submit later.
+
+```
+echo $KUBECONFIG | xargs cat | awk '/AWS_ACCESS_KEY_ID/ { getline; print }'
+echo $KUBECONFIG | xargs cat | awk '/AWS_SECRET_ACCESS_KEY/ { getline; print }'
+```
+
+You need to install jq a small json parser tool to your computer to make this work:
+
+On Ubuntu/Debian:
+```
+sudo apt-get install jq
+```
+
+On Mac:
+```
+brew install jq
+```
+{{- if .Values.historyServer.enabled }}
+{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+{{- if  eq $cloudProvider "azure" }}
+- [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
+{{- end}}
+{{- if  eq $cloudProvider "amazon" }}
+- [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }})
+{{- end}}
+{{- end}}
+
+Then submit an example spark application using the following command:
+
+```
+bin/spark-submit \
+--master k8s://<<kubernetes master ip>> \
+--deploy-mode cluster \
+--class org.apache.spark.examples.SparkPi \
+--conf spark.app.name=spark-pi \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+--conf spark.local.dir=/tmp/spark-locals \
+--conf spark.kubernetes.docker.image.pullPolicy=Always \
+--conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.name }} \
+--conf spark.kubernetes.authenticate.submission.oauthToken="$(AWS_ACCESS_KEY_ID=xxxxxx AWS_SECRET_ACCESS_KEY=xxxxxxxx  aws-iam-authenticator  token -i  {{ .Values.banzaicloud.cluster.name }} | jq .status.token -r)" \
+--conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+--conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+{{- if .Values.historyServer.enabled }}
+{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+--conf spark.eventLog.enabled=true \
+{{- if  eq $cloudProvider "amazon" }}
+--conf spark.eventLog.dir="s3a://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
+--conf spark.hadoop.fs.s3a.access.key=<amazon access key> \
+--conf spark.hadoop.fs.s3a.secret.key=<amazon access secret> \
+{{- else if eq $cloudProvider "google"}}
+--conf spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "alibaba"}}
+--conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "oracle"}}
+--conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+{{- else if eq $cloudProvider "azure"}}
+--conf spark.hadoop.fs.azure.account.key.{{ .Values.banzaicloud.bucket.storageAccountName }}.blob.core.windows.net=<storageAccountKey secret> \
+{{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
+--conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
+{{- end}}
+{{- end}}
+--conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
+local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+```
+
+{{- end }}
+
+Currently Spark on Kubernetes does not support uploading your application from your computer using `spark submit`, either your application must
+hosted in a remote location like s3 or http server.
+
+{{- if .Values.historyServer.enabled }}
+### Spark History Server
+
+To access logs created by your spark job, we are using spark history server which can be accessed from here:
+
+{{ $hosts := index .Values "spark" "spark-hs" "ingress" "hosts" }}
+{{ range $hosts }}
+- [{{ . }}](https://{{ . }})
+{{- end }}
+
+- [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.secret.historyServer.name }})
+{{- end }}
+
+### Monitoring
+
+The monitoring dashboard can be accessed on the following host:
+
+- [Grafana]({{ .Values.banzaicloud.organization.name }}/deployment?cluster={{ .Values.banzaicloud.cluster.name }}&releaseName=monitor)
+- [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name=cluster-{{ .Values.banzaicloud.cluster.id }}-grafana)
+
+{{- if .Values.banzaicloud.organization.name }}
+
+### CI/CD Pipeline
+
+Every time you make changes to the source code and update the `master` branch, the CI/CD pipeline will be triggered to reconfigure your spark cluster.
+
+[Go to CI/CD]({{ $.Values.banzaicloud.organization.name }}/cicd/{{ include "repo-name" . }})
+
+{{- end }}
+
+{{- if .Values.banzaicloud.organization.name }}
+
+### Secrets
+
+The following secrets were created as part of the spotguide:
+
+[Go to Secrets]({{ $.Values.banzaicloud.organization.name }}/secret?filter={{ include "repo-tag" . }})
+
+{{- end }}
