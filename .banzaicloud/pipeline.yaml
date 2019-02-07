@@ -1,20 +1,22 @@
 pipeline:
 
   install_history_server_bucket_secrets:
-    image: banzaicloud/ci-pipeline-client:0.8
+    image: banzaicloud/ci-pipeline-client:0.10
     action: InstallSecret
     clusterSecret:
-      name:
+      # sourceSecretName:
+      name: '{{ .CICD_REPO_NAME }}-hs-bucket'
       namespace: default
       merge: true
       spec: []
       convertToPreferredFormat: true
 
   install_history_server_auth_secrets:
-    image: banzaicloud/ci-pipeline-client:0.8
+    image: banzaicloud/ci-pipeline-client:0.10
     action: InstallSecret
     clusterSecret:
-      name:
+      # sourceSecretName:
+      name: '{{ .CICD_REPO_NAME }}-hs-auth'
       namespace: default
       merge: true
       spec: []
@@ -26,7 +28,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/spotguide-spark
 
   deploy_application:
-    image: banzaicloud/ci-pipeline-client:0.8
+    image: banzaicloud/ci-pipeline-client:0.10
     action: EnsureDeployment
     deployment:
       name: './spotguide-spark-1.0.0.tgz'
@@ -42,6 +44,9 @@ pipeline:
               num:
           bucket:
             storageAccountName:
+          secret:
+            historyServer:
+              name: '{{ .CICD_REPO_NAME }}-hs-auth'
         spark:
           monitoring:
             enabled:
@@ -51,14 +56,14 @@ pipeline:
             sparkEventLogStorage:
               logDirectory:
               cloudProvider:
-              secretName:
+              secretName: '{{ .CICD_REPO_NAME }}-hs-bucket'
             ingress:
               enabled: true
               annotations:
                 kubernetes.io/ingress.class: traefik
-                traefik.ingress.kubernetes.io/auth-secret:
                 traefik.frontend.rule.type: PathPrefixStrip
                 traefik.ingress.kubernetes.io/auth-type: basic
-                ingress.kubernetes.io/ssl-redirect: "true"
+                traefik.ingress.kubernetes.io/auth-secret: '{{ .CICD_REPO_NAME }}-hs-auth'
+                ingress.kubernetes.io/ssl-redirect: 'true'
               hosts:
-                - "shs-{{.CICD_REPO_NAME}}-{{.CLUSTER_NAME}}.{{.ORG_NAME}}.{{.DOMAIN_NAME}}"
+                - 'shs-{{.CICD_REPO_NAME}}-{{.CLUSTER_NAME}}.{{.ORG_NAME}}.{{.DOMAIN_NAME}}'
