@@ -121,9 +121,7 @@ questions:
       historyServer:
         const: true
   targets:
-    - name: deploy_application.deployment.values.banzaicloud.secret.historyServer.name
-    - name: install_history_server_auth_secrets.clusterSecret.name
-    - name: deploy_application.deployment.values.spark.spark-hs.ingress.annotations["traefik.ingress.kubernetes.io/auth-secret"]
+    - name: install_history_server_auth_secrets.clusterSecret.sourceSecretName
 - type: bucket
   name: sparkeventlogs
   label: 'Bucket Name'
@@ -137,7 +135,6 @@ questions:
   targets:
     - name: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.logDirectory
     - cloud: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.cloudProvider
-    - secret.accessName: install_history_server_bucket_secrets.clusterSecret.name
-    - secret.accessName: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.secretName
+    - secret.accessName: install_history_server_bucket_secrets.clusterSecret.sourceSecretName
     - aks.storageAccount: deploy_application.deployment.values.banzaicloud.bucket.storageAccountName
     - aks.storageAccount: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.azureStorageAccountName
