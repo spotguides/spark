@@ -122,6 +122,7 @@ questions:
         const: true
   targets:
     - name: install_history_server_auth_secrets.clusterSecret.sourceSecretName
+    - name: deploy_application.deployment.values.banzaicloud.secret.historyServer.name
 - type: bucket
   name: sparkeventlogs
   label: 'Bucket Name'

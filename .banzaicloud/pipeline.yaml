@@ -19,7 +19,9 @@ pipeline:
       name: '{{ .CICD_REPO_NAME }}-hs-auth'
       namespace: default
       merge: true
-      spec: []
+      spec:
+        - name: htpasswd
+          source: htpasswd
 
   package_application:
     image: lachlanevenson/k8s-helm:latest
@@ -46,7 +48,7 @@ pipeline:
             storageAccountName:
           secret:
             historyServer:
-              name: '{{ .CICD_REPO_NAME }}-hs-auth'
+              name:
         spark:
           monitoring:
             enabled:
