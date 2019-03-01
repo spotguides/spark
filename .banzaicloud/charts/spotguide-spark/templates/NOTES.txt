@@ -264,7 +264,7 @@ To access logs created by your spark job, we are using spark history server whic
 
 The monitoring dashboard can be accessed on the following host:
 
-- [Grafana]({{ .Values.banzaicloud.organization.name }}/deployment?cluster={{ .Values.banzaicloud.cluster.name }}&releaseName=monitor)
+- [Grafana]({{ .Values.banzaicloud.organization.name }}/deployment?cluster={{ .Values.banzaicloud.cluster.name }}&releaseName=monitor&name=monitor)
 - [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name=cluster-{{ .Values.banzaicloud.cluster.id }}-grafana)
 
 {{- if .Values.banzaicloud.organization.name }}
