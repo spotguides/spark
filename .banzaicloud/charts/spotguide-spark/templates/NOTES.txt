@@ -97,8 +97,10 @@ bin/spark-submit \
 --conf spark.kubernetes.authenticate.submission.caCertFile=<your path to certificate-authority-data.pem> \
 --conf spark.kubernetes.authenticate.submission.clientKeyFile=<your path to client-key-data.pem> \
 --conf spark.kubernetes.authenticate.submission.clientCertFile=<your path to client-certificate-data.pem> \
+{{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+{{- end }}
 {{- if .Values.historyServer.enabled }}
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 --conf spark.eventLog.enabled=true \
@@ -118,7 +120,9 @@ bin/spark-submit \
 --conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
 {{- end}}
 {{- end}}
+{{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
+{{- end}}
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
 ```
 
@@ -146,8 +150,10 @@ bin/spark-submit \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
 --conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.name }} \
+{{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+{{- end}}
 {{- if .Values.historyServer.enabled }}
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 --conf spark.eventLog.enabled=true \
@@ -167,7 +173,9 @@ bin/spark-submit \
 --conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
 {{- end}}
 {{- end}}
+{{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
+{{- end}}
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
 ```
 
@@ -217,8 +225,10 @@ bin/spark-submit \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
 --conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.name }} \
 --conf spark.kubernetes.authenticate.submission.oauthToken="$(AWS_ACCESS_KEY_ID=xxxxxx AWS_SECRET_ACCESS_KEY=xxxxxxxx  aws-iam-authenticator  token -i  {{ .Values.banzaicloud.cluster.name }} | jq .status.token -r)" \
+{{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+{{- end}}
 {{- if .Values.historyServer.enabled }}
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 --conf spark.eventLog.enabled=true \
@@ -238,7 +248,9 @@ bin/spark-submit \
 --conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
 {{- end}}
 {{- end}}
+{{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
+{{- end}}
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
 ```
 
@@ -260,12 +272,16 @@ To access logs created by your spark job, we are using spark history server whic
 - [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.secret.historyServer.name }})
 {{- end }}
 
+
+{{- if .Values.spark.monitoring.enabled}}
 ### Monitoring
 
 The monitoring dashboard can be accessed on the following host:
 
 - [Grafana]({{ .Values.banzaicloud.organization.name }}/deployment?cluster={{ .Values.banzaicloud.cluster.name }}&releaseName=monitor&name=monitor)
 - [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name=cluster-{{ .Values.banzaicloud.cluster.id }}-grafana)
+
+{{- end }}
 
 {{- if .Values.banzaicloud.organization.name }}
 
