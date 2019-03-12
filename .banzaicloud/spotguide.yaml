@@ -55,7 +55,6 @@ questions:
 - type: pipeline
   dataType: boolean
   label: "Monitoring"
-  required: true
   group: Monitoring
   key: monitoring
   default: true
@@ -105,7 +104,6 @@ questions:
   dataType: boolean
   default: true
   label: 'History Server'
-  required: true
   key: historyServer
   group: History Server
   targets:

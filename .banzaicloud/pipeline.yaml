@@ -1,5 +1,6 @@
 pipeline:
 
+{{{{- if .pipeline.deploy_application.deployment.values.historyServer.enabled }}}}
   install_history_server_bucket_secrets:
     image: banzaicloud/ci-pipeline-client:0.10
     action: InstallSecret
@@ -22,6 +23,7 @@ pipeline:
       spec:
         - name: htpasswd
           source: htpasswd
+{{{{- end }}}}
 
   package_application:
     image: lachlanevenson/k8s-helm:latest
