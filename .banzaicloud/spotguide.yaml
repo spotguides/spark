@@ -6,7 +6,7 @@ resources:
   sumMem: 12
   filters: []
   sameSize: false
-  onDemandPct: 30
+  onDemandPct: 25
   minNodes: 3
   maxNodes: 4
 questions:
