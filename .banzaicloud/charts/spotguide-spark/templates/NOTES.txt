@@ -274,6 +274,7 @@ To access logs created by your spark job, we are using spark history server whic
 
 
 {{- if .Values.spark.monitoring.enabled}}
+
 ### Monitoring
 
 The monitoring dashboard can be accessed on the following host:
