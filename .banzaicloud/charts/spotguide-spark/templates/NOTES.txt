@@ -90,6 +90,8 @@ bin/spark-submit \
 --deploy-mode cluster \
 --class org.apache.spark.examples.SparkPi \
 --conf spark.app.name=spark-pi \
+--conf spark.kubernetes.driver.label.app=spark-pi \
+--conf spark.kubernetes.executor.label.app=spark-pi \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
@@ -146,6 +148,8 @@ bin/spark-submit \
 --deploy-mode cluster \
 --class org.apache.spark.examples.SparkPi \
 --conf spark.app.name=spark-pi \
+--conf spark.kubernetes.driver.label.app=spark-pi \
+--conf spark.kubernetes.executor.label.app=spark-pi \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
@@ -220,6 +224,8 @@ bin/spark-submit \
 --deploy-mode cluster \
 --class org.apache.spark.examples.SparkPi \
 --conf spark.app.name=spark-pi \
+--conf spark.kubernetes.driver.label.app=spark-pi \
+--conf spark.kubernetes.executor.label.app=spark-pi \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
