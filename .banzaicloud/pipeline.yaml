@@ -2,7 +2,7 @@ pipeline:
 
 {{{{- if .pipeline.deploy_application.deployment.values.historyServer.enabled }}}}
   install_history_server_bucket_secrets:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: InstallSecret
     clusterSecret:
       # sourceSecretName:
@@ -13,7 +13,7 @@ pipeline:
       convertToPreferredFormat: true
 
   install_history_server_auth_secrets:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: InstallSecret
     clusterSecret:
       # sourceSecretName:
@@ -32,7 +32,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/spotguide-spark
 
   deploy_application:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: EnsureDeployment
     deployment:
       name: './spotguide-spark-1.0.0.tgz'
