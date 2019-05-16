@@ -34,6 +34,7 @@ questions:
         const: '2.3.2'
   targets:
     - deploy_application.deployment.values.banzaicloud.spark.image.name
+    - deploy_application.deployment.values.spark.spark-hs.image.tag
 - type: pipeline
   dataType: string
   label: 'Spark image name'
@@ -45,6 +46,7 @@ questions:
         const: '2.4.0'
   targets:
     - deploy_application.deployment.values.banzaicloud.spark.image.name
+    - deploy_application.deployment.values.spark.spark-hs.image.tag
 - type: pipeline
   dataType: string
   label: 'Number of spark executors'
