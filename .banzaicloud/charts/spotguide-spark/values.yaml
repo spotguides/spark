@@ -11,7 +11,8 @@
      location:
    spark:
      image:
-       name:
+       repository: banzaicloud/spark
+       tag:
      executor:
        num:
    bucket:

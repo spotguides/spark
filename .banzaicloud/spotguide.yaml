@@ -26,25 +26,27 @@ questions:
 - type: pipeline
   dataType: string
   label: 'Spark image name'
-  default: 'banzaicloud/spark:v2.3.2.146'
+  default: 'v2.3.2.146'
   group: Spark
   showIf:
     properties:
       spark_version_enum:
         const: '2.3.2'
   targets:
-    - deploy_application.deployment.values.banzaicloud.spark.image.name
+    - deploy_application.deployment.values.banzaicloud.spark.image.tag
+    - deploy_application.deployment.values.spark.spark-hs.image.tag
 - type: pipeline
   dataType: string
   label: 'Spark image name'
-  default: 'banzaicloud/spark:v2.4.0.147'
+  default: 'v2.4.0.147'
   group: Spark
   showIf:
     properties:
       spark_version_enum:
         const: '2.4.0'
   targets:
-    - deploy_application.deployment.values.banzaicloud.spark.image.name
+    - deploy_application.deployment.values.banzaicloud.spark.image.tag
+    - deploy_application.deployment.values.spark.spark-hs.image.tag
 - type: pipeline
   dataType: string
   label: 'Number of spark executors'

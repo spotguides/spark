@@ -8,8 +8,7 @@ Please be patient.
 To run spark submit from your machine you need a built spark distribution. To ease the process we prebuilt a spark for you.
 Please download it from here:
 
-{{- $sparkVersionLen := len .Values.banzaicloud.spark.image.name }}
-{{- $sparkVersion := substr 18 $sparkVersionLen .Values.banzaicloud.spark.image.name }}
+{{- $sparkVersion := .Values.banzaicloud.spark.image.tag }}
 ```
 curl https://s3-us-west-2.amazonaws.com/banzaicloud-spark-distro/spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz --output spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz
 tar -xzf spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz
@@ -56,7 +55,7 @@ Kubernetes master address must be retrieved, run the following command to retrie
 $ kubectl cluster-info | grep "Kubernetes master"
 ```
 
-Spark-submit also requires some credentials to be able to speak with the Kubernetes master. 
+Spark-submit also requires some credentials to be able to speak with the Kubernetes master.
 
 {{- if and (not (eq .Values.banzaicloud.cluster.distribution "gke")) (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
 
@@ -95,7 +94,7 @@ bin/spark-submit \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.name }} \
+--conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
 --conf spark.kubernetes.authenticate.submission.caCertFile=<your path to certificate-authority-data.pem> \
 --conf spark.kubernetes.authenticate.submission.clientKeyFile=<your path to client-key-data.pem> \
 --conf spark.kubernetes.authenticate.submission.clientCertFile=<your path to client-certificate-data.pem> \
@@ -153,7 +152,7 @@ bin/spark-submit \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.name }} \
+--conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
@@ -229,7 +228,7 @@ bin/spark-submit \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.name }} \
+--conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
 --conf spark.kubernetes.authenticate.submission.oauthToken="$(AWS_ACCESS_KEY_ID=xxxxxx AWS_SECRET_ACCESS_KEY=xxxxxxxx  aws-iam-authenticator  token -i  {{ .Values.banzaicloud.cluster.name }} | jq .status.token -r)" \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
