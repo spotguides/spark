@@ -20,7 +20,7 @@ questions:
   group: Spark
   options:
   - '2.3.2'
-  - '2.4.0'
+  - '2.4.3'
   targets:
     - deploy_application.deployment.values.banzaicloud.spark.version
 - type: pipeline
@@ -38,12 +38,12 @@ questions:
 - type: pipeline
   dataType: string
   label: 'Spark image name'
-  default: 'v2.4.0.147'
+  default: 'v2.4.3.172'
   group: Spark
   showIf:
     properties:
       spark_version_enum:
-        const: '2.4.0'
+        const: '2.4.3'
   targets:
     - deploy_application.deployment.values.banzaicloud.spark.image.tag
     - deploy_application.deployment.values.spark.spark-hs.image.tag
