@@ -37,6 +37,7 @@ pipeline:
     deployment:
       name: './spotguide-spark-1.0.0.tgz'
       releaseName: '{{ .CICD_REPO_NAME }}'
+      namespace: default
       values:
         historyServer:
           enabled:

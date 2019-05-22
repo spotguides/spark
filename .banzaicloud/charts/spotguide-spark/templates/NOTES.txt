@@ -153,6 +153,7 @@ bin/spark-submit \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
 --conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
+--conf spark.kubernetes.namespace={{ .Release.Namespace }} \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
