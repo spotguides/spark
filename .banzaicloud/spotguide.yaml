@@ -13,7 +13,7 @@ questions:
 - type: pipeline
   dataType: enum
   key: spark_version_enum
-  label: 'Spark Version'
+  label: 'Version'
   description: ''
   default: '2.3.2'
   required: true
@@ -25,47 +25,49 @@ questions:
     - deploy_application.deployment.values.banzaicloud.spark.version
 - type: pipeline
   dataType: string
-  label: 'Spark image name'
-  default: 'v2.3.2.146'
-  group: Spark
-  showIf:
-    properties:
-      spark_version_enum:
-        const: '2.3.2'
-  targets:
-    - deploy_application.deployment.values.banzaicloud.spark.image.tag
-    - deploy_application.deployment.values.spark.spark-hs.image.tag
-- type: pipeline
-  dataType: string
-  label: 'Spark image name'
-  default: 'v2.4.3.180'
-  group: Spark
-  showIf:
-    properties:
-      spark_version_enum:
-        const: '2.4.3'
-  targets:
-    - deploy_application.deployment.values.banzaicloud.spark.image.tag
-    - deploy_application.deployment.values.spark.spark-hs.image.tag
-- type: pipeline
-  dataType: string
-  label: 'Number of spark executors'
+  label: 'Number of executors'
   default: '2'
   group: Spark
   targets:
     - deploy_application.deployment.values.banzaicloud.spark.executor.num
 - type: pipeline
   dataType: string
-  label: "Namespace"
+  label: 'Namespace'
   group: Spark
   targets:
     - deploy_application.deployment.namespace
     - install_history_server_auth_secrets.clusterSecret.namespace
     - install_history_server_bucket_secrets.clusterSecret.namespace
 - type: pipeline
+  dataType: enum
+  label: 'Interpreter'
+  group: Spark
+  default: 'Scala'
+  options:
+  - 'Scala'
+  - 'Python'
+  - 'R'
+  showIf:
+    properties:
+      spark_version_enum:
+        const: '2.4.3'
+  targets:
+    - deploy_application.deployment.values.banzaicloud.interpreter
+- type: pipeline
+  dataType: boolean
+  label: 'Security'
+  group: Spark
+  default: false
+  showIf:
+    properties:
+      spark_version_enum:
+        const: '2.4.3'
+  targets:
+    - deploy_application.deployment.values.banzaicloud.security.enabled
+- type: pipeline
   dataType: boolean
   label: "Monitoring"
-  group: Monitoring
+  group: Spark
   key: monitoring
   default: true
   targets:
@@ -85,7 +87,7 @@ questions:
     *.sink.prometheus.pushgateway-enable-timestamp=true
     *.sink.prometheus.enable-dropwizard-collector=true
     *.sink.prometheus.enable-jmx-collector=false
-  group: Monitoring
+  group: Spark
   showIf:
     properties:
       monitoring:
@@ -103,7 +105,7 @@ questions:
     lowercaseOutputName: false
     lowercaseOutputLabelNames: false
     whitelistObjectNames: ["*:*"]
-  group: Monitoring
+  group: Spark
   showIf:
     properties:
       monitoring:
@@ -115,13 +117,13 @@ questions:
   default: true
   label: 'History Server'
   key: historyServer
-  group: History Server
+  group: Spark
   targets:
     - deploy_application.deployment.values.historyServer.enabled
 - type: secret
   dataType: htpasswd
   name: historyserverpass
-  group: History Server
+  group: Spark
   label: 'History Server Auth Creds'
   required: true
   showIf:
@@ -136,7 +138,7 @@ questions:
   label: 'Bucket Name'
   description: 'This bucket will be used to store spark logs.'
   required: true
-  group: History Server
+  group: Spark
   showIf:
     properties:
       historyServer:
