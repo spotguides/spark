@@ -17,6 +17,14 @@ cd spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}/
 
 ### Spark Submit
 
+{{- if .Values.banzaicloud.interpreter "Scala" }}
+  {{- $sparkImageName := (print .Values.banzaicloud.spark.image.repositoryPrefix "/spark:" .Values.banzaicloud.spark.image.tag)   }}
+{{- else if .Values.banzaicloud.interpreter "Python" }}
+  {{- $sparkImageName := (print .Values.banzaicloud.spark.image.repositoryPrefix "/spark-py:" .Values.banzaicloud.spark.image.tag) }}
+{{- else if .Values.banzaicloud.interpreter "R" }}
+  {{- $sparkImageName := (print .Values.banzaicloud.spark.image.repositoryPrefix "/spark-r:" .Values.banzaicloud.spark.image.tag) }}
+{{- end }}
+
 To run the below mentioned commands the kubernetes config needs to be set properly. To do that run the following commands:
 
 ### Get the Kubernetes config
@@ -87,17 +95,21 @@ echo '<copied values>' | base64 -D
 bin/spark-submit \
 --master k8s://<<kubernetes master ip>> \
 --deploy-mode cluster \
---class org.apache.spark.examples.SparkPi \
---conf spark.app.name=spark-pi \
---conf spark.kubernetes.driver.label.app=spark-pi \
---conf spark.kubernetes.executor.label.app=spark-pi \
+--conf spark.app.name=spark-example \
+--conf spark.kubernetes.driver.label.app=spark-example \
+--conf spark.kubernetes.executor.label.app=spark-example \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
+--conf spark.kubernetes.container.image={{ $sparkImageName }} \
+--conf spark.kubernetes.namespace={{ .Release.Namespace }} \
 --conf spark.kubernetes.authenticate.submission.caCertFile=<your path to certificate-authority-data.pem> \
 --conf spark.kubernetes.authenticate.submission.clientKeyFile=<your path to client-key-data.pem> \
 --conf spark.kubernetes.authenticate.submission.clientCertFile=<your path to client-certificate-data.pem> \
+{{- if .Values.banzaicloud.security.enabled }}
+--conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+--conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
+{{- end }}
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
@@ -124,7 +136,23 @@ bin/spark-submit \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
 {{- end}}
+{{- if .Values.banzaicloud.interpreter "Scala" }}
+
+--class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+
+{{- else if .Values.banzaicloud.interpreter "Python" }}
+
+--conf spark.kubernetes.pyspark.pythonVersion="3" \
+--py-files local:///opt/spark/examples/src/main/python/pi.py \
+local:///opt/spark/examples/src/main/python/pi.py
+
+{{- else if .Values.banzaicloud.interpreter "R" }}
+
+local:///opt/spark/examples/src/main/r/dataframe.R
+
+{{- end }}
+
 ```
 
 {{- end }}
@@ -145,14 +173,13 @@ local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Value
 bin/spark-submit \
 --master k8s://<<kubernetes master ip>> \
 --deploy-mode cluster \
---class org.apache.spark.examples.SparkPi \
---conf spark.app.name=spark-pi \
---conf spark.kubernetes.driver.label.app=spark-pi \
---conf spark.kubernetes.executor.label.app=spark-pi \
+--conf spark.app.name=spark-example \
+--conf spark.kubernetes.driver.label.app=spark-example \
+--conf spark.kubernetes.executor.label.app=spark-example \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
+--conf spark.kubernetes.container.image={{ $sparkImageName }} \
 --conf spark.kubernetes.namespace={{ .Release.Namespace }} \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
@@ -180,7 +207,22 @@ bin/spark-submit \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
 {{- end}}
+{{- if .Values.banzaicloud.interpreter "Scala" }}
+
+--class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+
+{{- else if .Values.banzaicloud.interpreter "Python" }}
+
+--conf spark.kubernetes.pyspark.pythonVersion="3" \
+--py-files local:///opt/spark/examples/src/main/python/pi.py \
+local:///opt/spark/examples/src/main/python/pi.py
+
+{{- else if .Values.banzaicloud.interpreter "R" }}
+
+local:///opt/spark/examples/src/main/r/dataframe.R
+
+{{- end }}
 ```
 
 {{- end }}
@@ -222,14 +264,14 @@ Then submit an example spark application using the following command:
 bin/spark-submit \
 --master k8s://<<kubernetes master ip>> \
 --deploy-mode cluster \
---class org.apache.spark.examples.SparkPi \
---conf spark.app.name=spark-pi \
---conf spark.kubernetes.driver.label.app=spark-pi \
---conf spark.kubernetes.executor.label.app=spark-pi \
+--conf spark.app.name=spark-example \
+--conf spark.kubernetes.driver.label.app=spark-example \
+--conf spark.kubernetes.executor.label.app=spark-example \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
+--conf spark.kubernetes.container.image={{ $sparkImageName }} \
+--conf spark.kubernetes.namespace={{ .Release.Namespace }} \
 --conf spark.kubernetes.authenticate.submission.oauthToken="$(AWS_ACCESS_KEY_ID=xxxxxx AWS_SECRET_ACCESS_KEY=xxxxxxxx  aws-iam-authenticator  token -i  {{ .Values.banzaicloud.cluster.name }} | jq .status.token -r)" \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
@@ -257,7 +299,22 @@ bin/spark-submit \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
 {{- end}}
+{{- if .Values.banzaicloud.interpreter "Scala" }}
+
+--class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+
+{{- else if .Values.banzaicloud.interpreter "Python" }}
+
+--conf spark.kubernetes.pyspark.pythonVersion="3" \
+--py-files local:///opt/spark/examples/src/main/python/pi.py \
+local:///opt/spark/examples/src/main/python/pi.py
+
+{{- else if .Values.banzaicloud.interpreter "R" }}
+
+local:///opt/spark/examples/src/main/r/dataframe.R
+
+{{- end }}
 ```
 
 {{- end }}
