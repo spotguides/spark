@@ -25,6 +25,12 @@ pipeline:
           source: htpasswd
 {{{{- end }}}}
 
+{{{{- if eq .pipeline.deploy_application.deployment.values.banzaicloud.spark.version "2.3.2" }}}}
+  # {{- $sparkVersion := "v2.3.2.146" }}
+{{{{- else if eq .pipeline.deploy_application.deployment.values.banzaicloud.spark.version "2.4.3" }}}}
+  # {{- $sparkVersion := "v2.4.3.194" }}
+{{{{- end }}}}
+
   package_application:
     image: lachlanevenson/k8s-helm:latest
     commands:
@@ -44,7 +50,7 @@ pipeline:
         banzaicloud:
           spark:
             image:
-              name:
+              tag: {{ $sparkVersion }}
             executor:
               num:
           bucket:
@@ -58,6 +64,8 @@ pipeline:
             jmxCollector:
             metricsProperties:
           spark-hs:
+            image:
+              tag: {{ $sparkVersion }}
             sparkEventLogStorage:
               logDirectory:
               cloudProvider:
