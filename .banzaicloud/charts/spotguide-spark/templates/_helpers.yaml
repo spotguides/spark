@@ -53,3 +53,13 @@
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{- define "sparkImageName" -}}
+{{- if eq .Values.banzaicloud.interpreter "Scala" }}
+{{- printf "%s/%s:%s" .Values.banzaicloud.spark.image.repositoryPrefix "spark" .Values.banzaicloud.spark.image.tag }}
+{{- else if eq .Values.banzaicloud.interpreter "Python" }}
+{{- printf "%s/%s:%s" .Values.banzaicloud.spark.image.repositoryPrefix "spark-py" .Values.banzaicloud.spark.image.tag }}
+{{- else if eq .Values.banzaicloud.interpreter "R" }}
+{{- printf "%s/%s:%s" .Values.banzaicloud.spark.image.repositoryPrefix "spark-r" .Values.banzaicloud.spark.image.tag }}
+{{- end }}
+{{- end -}}
