@@ -44,7 +44,11 @@ pipeline:
         banzaicloud:
           spark:
             image:
-              name:
+              {{{{- if eq .pipeline.deploy_application.deployment.values.banzaicloud.spark.version "2.3.2" }}}}
+              tag: v2.3.2.146
+              {{{{- else if eq .pipeline.deploy_application.deployment.values.banzaicloud.spark.version "2.4.3" }}}}
+              tag: v2.4.3.194
+              {{{{- end }}}}
             executor:
               num:
           bucket:
@@ -58,6 +62,12 @@ pipeline:
             jmxCollector:
             metricsProperties:
           spark-hs:
+            image:
+              {{{{- if eq .pipeline.deploy_application.deployment.values.banzaicloud.spark.version "2.3.2" }}}}
+              tag: v2.3.2.146
+              {{{{- else if eq .pipeline.deploy_application.deployment.values.banzaicloud.spark.version "2.4.3" }}}}
+              tag: v2.4.3.194
+              {{{{- end }}}}
             sparkEventLogStorage:
               logDirectory:
               cloudProvider:
