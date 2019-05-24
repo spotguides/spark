@@ -72,6 +72,7 @@ pipeline:
               logDirectory:
               cloudProvider:
               secretName: '{{ .CICD_REPO_NAME }}-hs-bucket'
+            {{{{- if .platform.AutoDNSEnabled | default true }}}}
             ingress:
               enabled: true
               annotations:
@@ -82,3 +83,7 @@ pipeline:
                 ingress.kubernetes.io/ssl-redirect: 'true'
               hosts:
                 - 'shs-{{ (printf "%s-%s" .CICD_REPO_NAME .CLUSTER_NAME) | sha1sum | trunc 10}}.{{.ORG_NAME}}.{{.DOMAIN_NAME}}'
+            {{{{ else }}}}
+            service:
+              type: LoadBalancer
+            {{{{- end }}}}
