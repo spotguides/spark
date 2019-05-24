@@ -56,7 +56,7 @@ questions:
     - deploy_application.deployment.values.banzaicloud.interpreter
 - type: pipeline
   dataType: boolean
-  label: 'Security'
+  label: 'Secure RPC'
   group: Spark
   default: false
   showIf:
