@@ -33,6 +33,7 @@ questions:
 - type: pipeline
   dataType: string
   label: 'Namespace'
+  required: true
   group: Spark
   targets:
     - deploy_application.deployment.namespace
