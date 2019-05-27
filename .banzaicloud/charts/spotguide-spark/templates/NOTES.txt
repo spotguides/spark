@@ -71,7 +71,7 @@ Spark-submit also requires some credentials to be able to speak with the Kuberne
 
 ```
 bin/spark-submit \
---master k8s://<<kubernetes master ip>> \
+--master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
 --deploy-mode cluster \
 --conf spark.app.name=spark-example \
 --conf spark.kubernetes.driver.label.app=spark-example \
@@ -231,7 +231,7 @@ Then submit an example spark application using the following command:
 
 ```
 bin/spark-submit \
---master k8s://<<kubernetes master ip>> \
+--master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
 --deploy-mode cluster \
 --conf spark.app.name=spark-example \
 --conf spark.kubernetes.driver.label.app=spark-example \
