@@ -312,8 +312,8 @@ hosted in a remote location like s3 or http server.
 
 To access logs created by your spark job, we are using spark history server which can be accessed from here:
 
-{{ $ingressEnabled := .Values "spark" "spark-hs" "ingress" "enabled"}}
-{{ $serviceType := .Values "spark" "spark-hs" "service" "type"}}
+{{ $ingressEnabled := index .Values "spark" "spark-hs" "ingress" "enabled"}}
+{{ $serviceType := index .Values "spark" "spark-hs" "service" "type"}}
 
 {{- if $ingressEnabled }}
 {{ $hosts := index .Values "spark" "spark-hs" "ingress" "hosts" }}
