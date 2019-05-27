@@ -1,6 +1,0 @@
-dependencies:
-- name: spark
-  repository: http://kubernetes-charts.banzaicloud.com/branch/master
-  version: 0.0.14
-digest: sha256:9d48cc54be8d2277736675a6e2260d6551c55dd63102eb0bb1fd777c07f98e46
-generated: 2018-12-04T10:32:10.565501824+01:00

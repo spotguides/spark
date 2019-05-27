@@ -59,9 +59,6 @@ Spark-submit also requires some credentials to be able to speak with the Kuberne
 
 {{- if and (not (eq .Values.banzaicloud.cluster.distribution "gke")) (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
 
-```
-echo '<copied values>' | base64 -D
-```
 {{- if .Values.historyServer.enabled }}
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
@@ -144,7 +141,7 @@ local:///opt/spark/examples/src/main/r/dataframe.R
 
 ```
 bin/spark-submit \
---master k8s://<<kubernetes master ip>> \
+--master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
 --deploy-mode cluster \
 --conf spark.app.name=spark-example \
 --conf spark.kubernetes.driver.label.app=spark-example \
@@ -300,7 +297,7 @@ To access logs created by your spark job, we are using spark history server whic
 
 {{ $serviceType := index .Values "spark" "spark-hs" "service" "type"}}
 {{ $hosts := index .Values "spark" "spark-hs" "ingress" "hosts" }}
-{{ if not eq $hosts "/" }}
+{{ if not (has "/" $hosts) }}
 {{ range $hosts }}
 - [{{ . }}](https://{{ . }})
 {{- end }}
