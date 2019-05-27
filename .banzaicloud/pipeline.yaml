@@ -72,7 +72,7 @@ pipeline:
               logDirectory:
               cloudProvider:
               secretName: '{{ .CICD_REPO_NAME }}-hs-bucket'
-            {{{{- if .platform.AutoDNSEnabled }}}}
+            {{{{- if .platform.AutoDNSEnabled | default true }}}}
             ingress:
               enabled: true
               annotations:
