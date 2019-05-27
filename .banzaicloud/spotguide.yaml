@@ -15,7 +15,7 @@ questions:
   key: spark_version_enum
   label: 'Version'
   description: ''
-  default: '2.3.2'
+  default: '2.4.3'
   required: true
   group: Spark
   options:
@@ -42,6 +42,7 @@ questions:
 - type: pipeline
   dataType: enum
   label: 'Interpreter'
+  key: spark_interpreter_type
   group: Spark
   default: 'Scala'
   options:
@@ -55,10 +56,26 @@ questions:
   targets:
     - deploy_application.deployment.values.banzaicloud.interpreter
 - type: pipeline
+  dataType: enum
+  label: 'Python version'
+  group: Spark
+  default: '3'
+  options:
+  - '2'
+  - '3'
+  showIf:
+    properties:
+      spark_interpreter_type:
+        const: 'Python'
+      spark_version_enum:
+        const: '2.4.3'        
+  targets:
+    - deploy_application.deployment.values.banzaicloud.pythonVersion
+- type: pipeline
   dataType: boolean
   label: 'Secure RPC'
   group: Spark
-  default: false
+  default: true
   showIf:
     properties:
       spark_version_enum:

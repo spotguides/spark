@@ -59,17 +59,6 @@ Spark-submit also requires some credentials to be able to speak with the Kuberne
 
 {{- if and (not (eq .Values.banzaicloud.cluster.distribution "gke")) (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
 
-These credentials can be parsed from kubernetes config. These values are keys so they are base64 encoded remember to decode before saving them.
-
-```
-echo $KUBECONFIG | xargs cat | grep certificate-authority-data
-echo $KUBECONFIG | xargs cat | grep client-key-data
-echo $KUBECONFIG | xargs cat | grep client-certificate-data
-```
-Save all these to files like `certificate-authority-data.pem`, `client-key-data.pem`, `client-certificate-data.pem`.
-
-Remember these files are base64 encoded so decode them first before saving them.
-
 ```
 echo '<copied values>' | base64 -D
 ```
@@ -95,9 +84,6 @@ bin/spark-submit \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
 --conf spark.kubernetes.container.image={{ template "sparkImageName" . }} \
 --conf spark.kubernetes.namespace={{ .Release.Namespace }} \
---conf spark.kubernetes.authenticate.submission.caCertFile=<your path to certificate-authority-data.pem> \
---conf spark.kubernetes.authenticate.submission.clientKeyFile=<your path to client-key-data.pem> \
---conf spark.kubernetes.authenticate.submission.clientCertFile=<your path to client-certificate-data.pem> \
 {{- if .Values.banzaicloud.security.enabled }}
 --conf spark.authenticate=true \
 --conf spark.network.crypto.enabled=true \
@@ -133,7 +119,7 @@ bin/spark-submit \
 --class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
 {{- else if eq .Values.banzaicloud.interpreter "Python" }}
---conf spark.kubernetes.pyspark.pythonVersion="3" \
+--conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
 --py-files local:///opt/spark/examples/src/main/python/pi.py \
 local:///opt/spark/examples/src/main/python/pi.py
 {{- else if eq .Values.banzaicloud.interpreter "R" }}
@@ -203,7 +189,7 @@ bin/spark-submit \
 --class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
 {{- else if eq .Values.banzaicloud.interpreter "Python" }}
---conf spark.kubernetes.pyspark.pythonVersion="3" \
+--conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
 --py-files local:///opt/spark/examples/src/main/python/pi.py \
 local:///opt/spark/examples/src/main/python/pi.py
 {{- else if eq .Values.banzaicloud.interpreter "R" }}
@@ -294,7 +280,7 @@ bin/spark-submit \
 --class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
 {{- else if eq .Values.banzaicloud.interpreter "Python" }}
---conf spark.kubernetes.pyspark.pythonVersion="3" \
+--conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
 --py-files local:///opt/spark/examples/src/main/python/pi.py \
 local:///opt/spark/examples/src/main/python/pi.py
 {{- else if eq .Values.banzaicloud.interpreter "R" }}
@@ -327,7 +313,7 @@ You can get the application URL by running these commands:
 export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 ```
 
-> If your choosen cloud provider is Amazon run the following command to get the Service Ip: 
+> If your choosen cloud provider is Amazon run the following command to get the Service Ip:
 ```
 export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 ```

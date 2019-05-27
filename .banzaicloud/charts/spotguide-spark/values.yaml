@@ -21,5 +21,6 @@
      historyServer:
        name:
    interpreter: Scala
+   pythonVersion: 3
    security:
      enabled: false
