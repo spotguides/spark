@@ -47,19 +47,10 @@ Search for `To install aws-iam-authenticator for Amazon EKS`.
 
 Small tool which interacts with your Kubernetes cluster must be installed. Please follow the following page to install it https://kubernetes.io/docs/tasks/tools/install-kubectl/
 
-To run your application in spark running on Kubernetes. A couple of extra arguments are required to `spark-submit`.
-
-Kubernetes master address must be retrieved, run the following command to retrieve it:
-
-```
-$ kubectl cluster-info | grep "Kubernetes master"
-```
-
-Spark-submit also requires some credentials to be able to speak with the Kubernetes master.
-
 {{- if and (not (eq .Values.banzaicloud.cluster.distribution "gke")) (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
 
 {{- if .Values.historyServer.enabled }}
+Spark-submit requires some credentials to be able to store event logs.
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
@@ -130,6 +121,7 @@ local:///opt/spark/examples/src/main/r/dataframe.R
 {{- if eq (.Values.banzaicloud.cluster.distribution) "gke" }}
 
 {{- if .Values.historyServer.enabled }}
+Spark-submit requires some credentials to be able to store event logs.
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
@@ -218,6 +210,7 @@ On Mac:
 brew install jq
 ```
 {{- if .Values.historyServer.enabled }}
+Spark-submit requires some credentials to be able to store event logs.
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
@@ -302,21 +295,19 @@ To access logs created by your spark job, we are using spark history server whic
 - [{{ . }}](https://{{ . }})
 {{- end }}
 {{ else }}
-You can get the application URL by running these commands:
 
-    NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-    You can watch the status of by running 'kubectl get svc -w {{ include "fullname" . }}'
-```
-export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-```
+You can get the application URL by running this command:
 
-> If your choosen cloud provider is Amazon run the following command to get the Service Ip:
+{{- if  eq $cloudProvider "amazon" }}
 ```
-export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark-hs,release={{ .Release.Name }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 ```
+{{- else}}
 ```
-echo http://$SERVICE_IP:{{ .Values.application.service.port }}
+echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark-hs,release={{ .Release.Name }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 ```
+{{- end}}
+
 {{- end }}
 
 - [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.secret.historyServer.name }})
