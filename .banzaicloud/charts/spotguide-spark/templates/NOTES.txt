@@ -9,12 +9,12 @@ To run spark submit from your machine you need a built spark distribution. To ea
 Please download it from here:
 
 {{- $sparkVersion := .Values.banzaicloud.spark.image.tag }}
+
 ```
 curl https://s3-us-west-2.amazonaws.com/banzaicloud-spark-distro/spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz --output spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz
 tar -xzf spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}.tgz
 cd spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}/
 ```
-
 ### Spark Submit
 
 To run the below mentioned commands the kubernetes config needs to be set properly. To do that run the following commands:
@@ -29,7 +29,7 @@ Download the cluster config from the cluster details page:
 export KUBECONFIG=<path to the file which contains the fetched config/downloaded before>
 ```
 
-{{- if  eq (.Values.banzaicloud.cluster.distribution) "eks" }}
+{{- if  eq .Values.banzaicloud.cluster.distribution "eks" }}
 In case of Amazon EKS a small authenticator program is required to be able to access the cluster. It can be installed using the following command:
 
 Using Go:
@@ -47,33 +47,10 @@ Search for `To install aws-iam-authenticator for Amazon EKS`.
 
 Small tool which interacts with your Kubernetes cluster must be installed. Please follow the following page to install it https://kubernetes.io/docs/tasks/tools/install-kubectl/
 
-To run your application in spark running on Kubernetes. A couple of extra arguments are required to `spark-submit`.
-
-Kubernetes master address must be retrieved, run the following command to retrieve it:
-
-```
-$ kubectl cluster-info | grep "Kubernetes master"
-```
-
-Spark-submit also requires some credentials to be able to speak with the Kubernetes master.
-
 {{- if and (not (eq .Values.banzaicloud.cluster.distribution "gke")) (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
 
-These credentials can be parsed from kubernetes config. These values are keys so they are base64 encoded remember to decode before saving them.
-
-```
-echo $KUBECONFIG | xargs cat | grep certificate-authority-data
-echo $KUBECONFIG | xargs cat | grep client-key-data
-echo $KUBECONFIG | xargs cat | grep client-certificate-data
-```
-Save all these to files like `certificate-authority-data.pem`, `client-key-data.pem`, `client-certificate-data.pem`.
-
-Remember these files are base64 encoded so decode them first before saving them.
-
-```
-echo '<copied values>' | base64 -D
-```
 {{- if .Values.historyServer.enabled }}
+Spark-submit requires some credentials to be able to store event logs.
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
@@ -85,19 +62,21 @@ echo '<copied values>' | base64 -D
 
 ```
 bin/spark-submit \
---master k8s://<<kubernetes master ip>> \
+--master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
 --deploy-mode cluster \
---class org.apache.spark.examples.SparkPi \
---conf spark.app.name=spark-pi \
---conf spark.kubernetes.driver.label.app=spark-pi \
---conf spark.kubernetes.executor.label.app=spark-pi \
+--conf spark.app.name=spark-example \
+--conf spark.kubernetes.driver.label.app=spark-example \
+--conf spark.kubernetes.executor.label.app=spark-example \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
---conf spark.kubernetes.authenticate.submission.caCertFile=<your path to certificate-authority-data.pem> \
---conf spark.kubernetes.authenticate.submission.clientKeyFile=<your path to client-key-data.pem> \
---conf spark.kubernetes.authenticate.submission.clientCertFile=<your path to client-certificate-data.pem> \
+--conf spark.kubernetes.container.image={{ template "sparkImageName" . }} \
+--conf spark.kubernetes.namespace={{ .Release.Namespace }} \
+{{- if .Values.banzaicloud.security.enabled }}
+--conf spark.authenticate=true \
+--conf spark.network.crypto.enabled=true \
+--conf spark.io.encryption.enabled=true \
+{{- end }}
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
@@ -124,7 +103,17 @@ bin/spark-submit \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
 {{- end}}
+{{- if eq .Values.banzaicloud.interpreter "Scala" }}
+--class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+{{- else if eq .Values.banzaicloud.interpreter "Python" }}
+--conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
+--py-files local:///opt/spark/examples/src/main/python/pi.py \
+local:///opt/spark/examples/src/main/python/pi.py
+{{- else if eq .Values.banzaicloud.interpreter "R" }}
+local:///opt/spark/examples/src/main/r/dataframe.R
+{{- end }}
+
 ```
 
 {{- end }}
@@ -132,6 +121,7 @@ local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Value
 {{- if eq (.Values.banzaicloud.cluster.distribution) "gke" }}
 
 {{- if .Values.historyServer.enabled }}
+Spark-submit requires some credentials to be able to store event logs.
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
@@ -143,16 +133,21 @@ local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Value
 
 ```
 bin/spark-submit \
---master k8s://<<kubernetes master ip>> \
+--master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
 --deploy-mode cluster \
---class org.apache.spark.examples.SparkPi \
---conf spark.app.name=spark-pi \
---conf spark.kubernetes.driver.label.app=spark-pi \
---conf spark.kubernetes.executor.label.app=spark-pi \
+--conf spark.app.name=spark-example \
+--conf spark.kubernetes.driver.label.app=spark-example \
+--conf spark.kubernetes.executor.label.app=spark-example \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
+--conf spark.kubernetes.container.image={{ template "sparkImageName" . }}  \
+--conf spark.kubernetes.namespace={{ .Release.Namespace }} \
+{{- if .Values.banzaicloud.security.enabled }}
+--conf spark.authenticate=true \
+--conf spark.network.crypto.enabled=true \
+--conf spark.io.encryption.enabled=true \
+{{- end }}
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
@@ -179,7 +174,16 @@ bin/spark-submit \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
 {{- end}}
+{{- if eq .Values.banzaicloud.interpreter "Scala" }}
+--class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+{{- else if eq .Values.banzaicloud.interpreter "Python" }}
+--conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
+--py-files local:///opt/spark/examples/src/main/python/pi.py \
+local:///opt/spark/examples/src/main/python/pi.py
+{{- else if eq .Values.banzaicloud.interpreter "R" }}
+local:///opt/spark/examples/src/main/r/dataframe.R
+{{- end }}
 ```
 
 {{- end }}
@@ -206,6 +210,7 @@ On Mac:
 brew install jq
 ```
 {{- if .Values.historyServer.enabled }}
+Spark-submit requires some credentials to be able to store event logs.
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
@@ -219,16 +224,16 @@ Then submit an example spark application using the following command:
 
 ```
 bin/spark-submit \
---master k8s://<<kubernetes master ip>> \
+--master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
 --deploy-mode cluster \
---class org.apache.spark.examples.SparkPi \
---conf spark.app.name=spark-pi \
---conf spark.kubernetes.driver.label.app=spark-pi \
---conf spark.kubernetes.executor.label.app=spark-pi \
+--conf spark.app.name=spark-example \
+--conf spark.kubernetes.driver.label.app=spark-example \
+--conf spark.kubernetes.executor.label.app=spark-example \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ .Values.banzaicloud.spark.image.repository }}:{{ .Values.banzaicloud.spark.image.tag }} \
+--conf spark.kubernetes.container.image={{ template "sparkImageName" . }}  \
+--conf spark.kubernetes.namespace={{ .Release.Namespace }} \
 --conf spark.kubernetes.authenticate.submission.oauthToken="$(AWS_ACCESS_KEY_ID=xxxxxx AWS_SECRET_ACCESS_KEY=xxxxxxxx  aws-iam-authenticator  token -i  {{ .Values.banzaicloud.cluster.name }} | jq .status.token -r)" \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
@@ -253,10 +258,24 @@ bin/spark-submit \
 --conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
 {{- end}}
 {{- end}}
+{{- if .Values.banzaicloud.security.enabled }}
+--conf spark.authenticate=true \
+--conf spark.network.crypto.enabled=true \
+--conf spark.io.encryption.enabled=true \
+{{- end }}
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
 {{- end}}
+{{- if eq .Values.banzaicloud.interpreter "Scala" }}
+--class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+{{- else if eq .Values.banzaicloud.interpreter "Python" }}
+--conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
+--py-files local:///opt/spark/examples/src/main/python/pi.py \
+local:///opt/spark/examples/src/main/python/pi.py
+{{- else if eq .Values.banzaicloud.interpreter "R" }}
+local:///opt/spark/examples/src/main/r/dataframe.R
+{{- end }}
 ```
 
 {{- end }}
@@ -269,9 +288,27 @@ hosted in a remote location like s3 or http server.
 
 To access logs created by your spark job, we are using spark history server which can be accessed from here:
 
+{{ $serviceType := index .Values "spark" "spark-hs" "service" "type"}}
 {{ $hosts := index .Values "spark" "spark-hs" "ingress" "hosts" }}
+{{ if not (has "/" $hosts) }}
 {{ range $hosts }}
 - [{{ . }}](https://{{ . }})
+{{- end }}
+{{ else }}
+
+You can get the application URL by running this command:
+
+{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+{{- if  eq $cloudProvider "amazon" }}
+```
+echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark-hs,release={{ .Release.Name }} -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+```
+{{- else}}
+```
+echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark-hs,release={{ .Release.Name }} -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+```
+{{- end}}
+
 {{- end }}
 
 - [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.secret.historyServer.name }})

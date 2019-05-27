@@ -11,7 +11,7 @@
      location:
    spark:
      image:
-       repository: banzaicloud/spark
+       repositoryPrefix: banzaicloud
        tag:
      executor:
        num:
@@ -20,3 +20,7 @@
    secret:
      historyServer:
        name:
+   interpreter: Scala
+   pythonVersion: 3
+   security:
+     enabled: false
