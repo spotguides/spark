@@ -43,6 +43,17 @@
 {{- end }}
 {{- end }}
 
+{{- define "repo-full-name" }}
+{{- if .Values.banzaicloud.organization.name }}
+{{- range .Values.banzaicloud.tags }}
+{{- if regexMatch "^repo:" . }}
+{{- $repoFullName := regexReplaceAll "^repo:" . "" }}
+{{- $repoFullName}}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "repo-name" }}
 {{- if .Values.banzaicloud.organization.name }}
 {{- range .Values.banzaicloud.tags }}

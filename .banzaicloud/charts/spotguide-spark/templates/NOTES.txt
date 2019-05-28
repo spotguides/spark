@@ -50,6 +50,7 @@ Small tool which interacts with your Kubernetes cluster must be installed. Pleas
 {{- if and (not (eq .Values.banzaicloud.cluster.distribution "gke")) (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
 
 {{- if .Values.historyServer.enabled }}
+
 Spark-submit requires some credentials to be able to store event logs.
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
@@ -282,6 +283,8 @@ local:///opt/spark/examples/src/main/r/dataframe.R
 
 Currently Spark on Kubernetes does not support uploading your application from your computer using `spark submit`, either your application must
 hosted in a remote location like s3 or http server.
+
+> For further help please read the generated repository's [readme](https://github.com/{{ include "repo-full-name" . }}).
 
 {{- if .Values.historyServer.enabled }}
 ### Spark History Server
