@@ -51,12 +51,15 @@ Small tool which interacts with your Kubernetes cluster must be installed. Pleas
 
 {{- if .Values.historyServer.enabled }}
 
-Spark-submit requires some credentials to be able to store event logs.
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
+Spark-submit requires your Azure <storageAccountKey secret> to be able to store event logs in Azure, you can find it in this secret below:
+
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
 {{- end}}
 {{- if  eq $cloudProvider "amazon" }}
+Spark-submit requires your Amazon <amazon access key/secret> to be able to store event logs in S3, you can find it in this secret below:
+
 - [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }})
 {{- end}}
 {{- end}}
@@ -122,12 +125,16 @@ local:///opt/spark/examples/src/main/r/dataframe.R
 {{- if eq (.Values.banzaicloud.cluster.distribution) "gke" }}
 
 {{- if .Values.historyServer.enabled }}
-Spark-submit requires some credentials to be able to store event logs.
+
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
+Spark-submit requires your Azure <storageAccountKey secret> to be able to store event logs in Azure, you can find it in this secret below:
+
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
 {{- end}}
 {{- if  eq $cloudProvider "amazon" }}
+Spark-submit requires your Amazon <amazon access key/secret> to be able to store event logs in S3, you can find it in this secret below:
+
 - [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }})
 {{- end}}
 {{- end}}
@@ -191,14 +198,6 @@ local:///opt/spark/examples/src/main/r/dataframe.R
 
 {{- if  eq (.Values.banzaicloud.cluster.distribution) "eks" }}
 
-Get your aws credentials from the kubernetes config you downloaded earlier:
-These values will needed for spark-submit later.
-
-```
-echo $KUBECONFIG | xargs cat | awk '/AWS_ACCESS_KEY_ID/ { getline; print }'
-echo $KUBECONFIG | xargs cat | awk '/AWS_SECRET_ACCESS_KEY/ { getline; print }'
-```
-
 You need to install jq a small json parser tool to your computer to make this work:
 
 On Ubuntu/Debian:
@@ -211,12 +210,16 @@ On Mac:
 brew install jq
 ```
 {{- if .Values.historyServer.enabled }}
-Spark-submit requires some credentials to be able to store event logs.
+
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
 {{- if  eq $cloudProvider "azure" }}
+Spark-submit requires your Azure <storageAccountKey secret> to be able to store event logs in Azure, you can find it in this secret below:
+
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
 {{- end}}
 {{- if  eq $cloudProvider "amazon" }}
+Spark-submit requires your Amazon <amazon access key/secret> to be able to store event logs in S3, you can find it in this secret below:
+
 - [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }})
 {{- end}}
 {{- end}}
@@ -224,6 +227,8 @@ Spark-submit requires some credentials to be able to store event logs.
 Then submit an example spark application using the following command:
 
 ```
+AWS_ACCESS_KEY_ID=$(echo $KUBECONFIG | xargs cat | awk '/AWS_ACCESS_KEY_ID/ { getline; print $2 }') \
+AWS_SECRET_ACCESS_KEY=$(echo $KUBECONFIG | xargs cat | awk '/AWS_SECRET_ACCESS_KEY/ { getline; print $2 }') \
 bin/spark-submit \
 --master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
 --deploy-mode cluster \
@@ -235,7 +240,7 @@ bin/spark-submit \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
 --conf spark.kubernetes.container.image={{ template "sparkImageName" . }}  \
 --conf spark.kubernetes.namespace={{ .Release.Namespace }} \
---conf spark.kubernetes.authenticate.submission.oauthToken="$(AWS_ACCESS_KEY_ID=xxxxxx AWS_SECRET_ACCESS_KEY=xxxxxxxx  aws-iam-authenticator  token -i  {{ .Values.banzaicloud.cluster.name }} | jq .status.token -r)" \
+--conf spark.kubernetes.authenticate.submission.oauthToken="$(aws-iam-authenticator  token -i  {{ .Values.banzaicloud.cluster.name }} | jq .status.token -r)" \
 {{- if .Values.spark.monitoring.enabled}}
 --conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
 --conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
@@ -284,7 +289,7 @@ local:///opt/spark/examples/src/main/r/dataframe.R
 Currently Spark on Kubernetes does not support uploading your application from your computer using `spark submit`, either your application must
 hosted in a remote location like s3 or http server.
 
-> For further help please read the generated repository's [readme](https://github.com/{{ include "repo-full-name" . }}).
+> Find more details on spark-submit options in the generated repository's [readme](https://github.com/{{ include "repo-full-name" . }}).
 
 {{- if .Values.historyServer.enabled }}
 ### Spark History Server

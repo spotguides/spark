@@ -41,7 +41,7 @@ questions:
     - install_history_server_bucket_secrets.clusterSecret.namespace
 - type: pipeline
   dataType: enum
-  label: 'Interpreter'
+  label: 'Language'
   key: spark_interpreter_type
   group: Spark
   default: 'Scala'
@@ -68,12 +68,12 @@ questions:
       spark_interpreter_type:
         const: 'Python'
       spark_version_enum:
-        const: '2.4.3'        
+        const: '2.4.3'
   targets:
     - deploy_application.deployment.values.banzaicloud.pythonVersion
 - type: pipeline
   dataType: boolean
-  label: 'Secure RPC'
+  label: 'RPC & IO encryption'
   group: Spark
   default: true
   showIf:
@@ -165,5 +165,6 @@ questions:
     - name: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.logDirectory
     - cloud: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.cloudProvider
     - secret.accessName: install_history_server_bucket_secrets.clusterSecret.sourceSecretName
+    - secret.accessName: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.secretName
     - aks.storageAccount: deploy_application.deployment.values.banzaicloud.bucket.storageAccountName
     - aks.storageAccount: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.azureStorageAccountName
