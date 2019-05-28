@@ -72,7 +72,7 @@ pipeline:
             sparkEventLogStorage:
               logDirectory:
               cloudProvider:
-              secretName: '{{ .CICD_REPO_NAME }}-hs-bucket'
+              secretName:
             {{{{- if .platform.AutoDNSEnabled }}}}
             ingress:
               enabled: true
