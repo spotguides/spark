@@ -164,6 +164,8 @@ questions:
   targets:
     - name: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.logDirectory
     - cloud: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.cloudProvider
+    - location: deploy_application.deployment.values.banzaicloud.bucket.aliOssRegion
+    - location: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.aliOssRegion
     - secret.accessName: install_history_server_bucket_secrets.clusterSecret.sourceSecretName
     - secret.accessName: deploy_application.deployment.values.spark.spark-hs.sparkEventLogStorage.pipelineSecretName
     - aks.storageAccount: deploy_application.deployment.values.banzaicloud.bucket.storageAccountName

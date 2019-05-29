@@ -54,6 +54,7 @@ pipeline:
               num:
           bucket:
             storageAccountName:
+            aliOssRegion:
           secret:
             historyServer:
               name:
@@ -72,6 +73,7 @@ pipeline:
             sparkEventLogStorage:
               logDirectory:
               cloudProvider:
+              aliOssRegion: 
               secretName: '{{ .CICD_REPO_NAME }}-hs-bucket'
               pipelineSecretName:
             {{{{- if .platform.AutoDNSEnabled }}}}

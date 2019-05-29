@@ -17,6 +17,7 @@
        num:
    bucket:
      storageAccountName:
+     aliOssRegion:   
    secret:
      historyServer:
        name:

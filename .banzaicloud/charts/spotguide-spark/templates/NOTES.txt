@@ -96,7 +96,11 @@ bin/spark-submit \
 {{- else if eq $cloudProvider "google"}}
 --conf spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
 {{- else if eq $cloudProvider "alibaba"}}
---conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+--conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
+--conf spark.hadoop.fs.oss.accessKeyId=<alibaba access key>
+--conf spark.hadoop.fs.oss.accessKeySecret=<alibaba access secret>
+--conf spark.hadoop.fs.oss.impl=org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem
+--conf spark.hadoop.fs.oss.endpoint=oss-{{ .Values.banzaicloud.bucket.aliOssRegion }}.aliyuncs.com
 {{- else if eq $cloudProvider "oracle"}}
 --conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
 {{- else if eq $cloudProvider "azure"}}
@@ -256,7 +260,7 @@ bin/spark-submit \
 {{- else if eq $cloudProvider "google"}}
 --conf spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
 {{- else if eq $cloudProvider "alibaba"}}
---conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+--conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
 {{- else if eq $cloudProvider "oracle"}}
 --conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
 {{- else if eq $cloudProvider "azure"}}
