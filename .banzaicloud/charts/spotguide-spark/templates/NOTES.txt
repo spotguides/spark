@@ -53,16 +53,29 @@ Small tool which interacts with your Kubernetes cluster must be installed. Pleas
 {{- if .Values.historyServer.enabled }}
 
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+
 {{- if  eq $cloudProvider "azure" }}
-Spark-submit requires your Azure <storageAccountKey secret> to be able to store event logs in Azure, you can find it in this secret below:
+Spark-submit requires your Azure <storageAccountKey secret> to be able to store event logs, you can find it in this secret below:
 
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
-{{- end}}
-{{- if  eq $cloudProvider "amazon" }}
-Spark-submit requires your Amazon <amazon access key/secret> to be able to store event logs in S3, you can find it in this secret below:
 
-- [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
+{{- else if  eq $cloudProvider "amazon" }}
+Spark-submit requires your Amazon <amazon access key/secret> to be able to store event logs, you can find it in this secret below:
+
+- [Amazon secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
+
+{{- else if  eq $cloudProvider "alibaba" }}
+Spark-submit requires your Alibaba <alibaba access key/secret> to be able to store event logs, you can find it in this secret below:
+
+- [Alibaba secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
+
+{{- else if  eq $cloudProvider "oracle" }}
+Spark-submit requires your Oracle <tenancy_ocid/user_ocid/api_key_fingerprint> to be able to store event logs, you can find it in this secret below:
+
+- [Oracle secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
+
 {{- end}}
+
 {{- end}}
 
 ```
@@ -97,12 +110,18 @@ bin/spark-submit \
 --conf spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
 {{- else if eq $cloudProvider "alibaba"}}
 --conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
---conf spark.hadoop.fs.oss.accessKeyId=<alibaba access key>
---conf spark.hadoop.fs.oss.accessKeySecret=<alibaba access secret>
---conf spark.hadoop.fs.oss.impl=org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem
---conf spark.hadoop.fs.oss.endpoint=oss-{{ .Values.banzaicloud.bucket.aliOssRegion }}.aliyuncs.com
-{{- else if eq $cloudProvider "oracle"}}
+--conf spark.hadoop.fs.oss.accessKeyId=<alibaba access key> \
+--conf spark.hadoop.fs.oss.accessKeySecret=<alibaba access secret> \
+--conf spark.hadoop.fs.oss.impl=org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem \
+--conf spark.hadoop.fs.oss.endpoint=oss-{{ .Values.banzaicloud.bucket.location }}.aliyuncs.com \
 --conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+--conf spark.hadoop.fs.oci.client.hostname=https://objectstorage.{{ .Values.banzaicloud.bucket.location }}.oraclecloud.com \
+--conf spark.hadoop.fs.oci.client.auth.tenantId=<tenancy_ocid> \
+--conf spark.hadoop.fs.oci.client.auth.userId=<user_ocid> \
+--conf spark.hadoop.fs.oci.client.auth.fingerprint=<api_key_fingerprint> \
+--conf spark.hadoop.fs.oci.client.auth.pemfilepath=/opt/spark/conf/secret/api_key \
+--conf spark.kubernetes.driver.secrets.{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}=/opt/spark/conf/secret \
+--conf spark.kubernetes.executor.secrets.{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}=/opt/spark/conf/secret \
 {{- else if eq $cloudProvider "azure"}}
 --conf spark.hadoop.fs.azure.account.key.{{ .Values.banzaicloud.bucket.storageAccountName }}.blob.core.windows.net=<storageAccountKey secret> \
 {{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
