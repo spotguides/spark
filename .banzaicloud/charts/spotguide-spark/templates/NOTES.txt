@@ -316,6 +316,7 @@ echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark
 echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark-hs,release={{ .Release.Name }} -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
 {{- end}}
+{{- end}}
 
 - [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.secret.historyServer.name }})
 {{- end }}
