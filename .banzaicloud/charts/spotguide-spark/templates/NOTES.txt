@@ -307,8 +307,7 @@ To access logs created by your spark job, we are using spark history server whic
 
 You can get the application URL by running this command:
 
-{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
-{{- if  eq $cloudProvider "amazon" }}
+{{- if  eq .Values.banzaicloud.cluster.cloud "amazon" }}
 ```
 echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark-hs,release={{ .Release.Name }} -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
 ```
@@ -317,8 +316,6 @@ echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark
 echo https://$(kubectl get ing --namespace {{ .Release.Namespace }} -l app=spark-hs,release={{ .Release.Name }} -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
 {{- end}}
-
-{{- end }}
 
 - [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.secret.historyServer.name }})
 {{- end }}
