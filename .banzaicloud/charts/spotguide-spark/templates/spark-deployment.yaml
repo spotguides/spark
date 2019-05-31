@@ -1,0 +1,75 @@
+{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+        heritage: "{{ .Release.Service }}"
+    spec:
+      initContainers:
+      - name: {{ .Chart.Name }}-init-config
+        image: "{{ template "sparkImageName" . }}"
+        imagePullPolicy: Always
+        envFrom:
+          - secretRef:
+              name: {{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            envsubst < /opt/spark/prepared_conf/spark-defaults.conf > /opt/spark/conf/spark-defaults.conf;
+        volumeMounts:
+          - name: config-volume
+            mountPath: /opt/spark/conf/
+          - name: config-init-volume
+            mountPath: /opt/spark/prepared_conf/spark-defaults.conf
+            subPath: spark-defaults.conf
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ template "sparkImageName" . }}"
+        imagePullPolicy: Always
+        command:
+          - 'apk add ttyd'
+          - 'ttyd -T xterm-256color -p 8090 bash -x'
+        volumeMounts:
+          - name: config-volume
+            mountPath: /opt/spark/conf/spark-defaults.conf
+            subPath: spark-defaults.conf
+        {{- if eq $cloudProvider "google" }}
+          - name: secret-volume
+            mountPath: /opt/spark/conf/secret/google.json
+            subPath: google.json
+        {{- else if eq $cloudProvider "oracle" }}
+          - name: secret-volume
+            mountPath: /opt/spark/conf/secret/api_key
+            subPath: api_key
+        {{- end }}
+        ports:
+          - name: http
+            containerPort: 8090
+            protocol: TCP
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      volumes:
+        - name: config-volume
+          emptyDir: {}
+        - name: config-init-volume
+          configMap:
+            name: {{ template "fullname" . }}-spark-config
+      {{- if or (eq $cloudProvider "google") ((eq $cloudProvider "oracle")) }}
+        - name: secret-volume
+          secret:
+            secretName: {{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}
+      {{- end }}
