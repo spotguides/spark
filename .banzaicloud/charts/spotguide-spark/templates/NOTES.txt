@@ -17,7 +17,13 @@ cd spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}/
 ```
 ### Spark Submit
 
-To run the below mentioned commands the kubernetes config needs to be set properly. To do that run the following commands:
+#### Client mode
+
+[Launch spark-submit from inside the cluster](/pipeline/api/v1/orgs/{{ $.Values.banzaicloud.organization.name }}/clusters/{{ .Values.banzaicloud.cluster.id }}/proxy/api/v1/namespaces/{{ .Release.Namespace }}/services/{{ template "fullname" . }}:8090/proxy)
+
+#### Cluster mode
+
+To lauch spark-submit from outside of the cluster the below mentioned commands the kubernetes config needs to be set properly. To do that run the following commands:
 
 ### Get the Kubernetes config
 Download the cluster config from the cluster details page:
@@ -59,17 +65,17 @@ Spark-submit requires your Azure <storageAccountKey secret> to be able to store 
 
 - [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
 
-{{- else if  eq $cloudProvider "amazon" }}
+{{- else if eq $cloudProvider "amazon" }}
 Spark-submit requires your Amazon <amazon access key/secret> to be able to store event logs, you can find it in this secret below:
 
 - [Amazon secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
 
-{{- else if  eq $cloudProvider "alibaba" }}
+{{- else if eq $cloudProvider "alibaba" }}
 Spark-submit requires your Alibaba <alibaba access key/secret> to be able to store event logs, you can find it in this secret below:
 
 - [Alibaba secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
 
-{{- else if  eq $cloudProvider "oracle" }}
+{{- else if eq $cloudProvider "oracle" }}
 Spark-submit requires your Oracle <tenancy_ocid/user_ocid/api_key_fingerprint> to be able to store event logs, you can find it in this secret below:
 
 - [Oracle secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
@@ -114,6 +120,7 @@ bin/spark-submit \
 --conf spark.hadoop.fs.oss.accessKeySecret=<alibaba access secret> \
 --conf spark.hadoop.fs.oss.impl=org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem \
 --conf spark.hadoop.fs.oss.endpoint=oss-{{ .Values.banzaicloud.bucket.location }}.aliyuncs.com \
+{{- else if eq $cloudProvider "oracle"}}
 --conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
 --conf spark.hadoop.fs.oci.client.hostname=https://objectstorage.{{ .Values.banzaicloud.bucket.location }}.oraclecloud.com \
 --conf spark.hadoop.fs.oci.client.auth.tenantId=<tenancy_ocid> \
@@ -128,7 +135,7 @@ bin/spark-submit \
 --conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
 {{- end}}
 {{- end}}
-{{- if .Values.spark.monitoring.enabled}}
+{{- if .Values.spark.monitoring.enabled }}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
 {{- end}}
 {{- if eq .Values.banzaicloud.interpreter "Scala" }}
