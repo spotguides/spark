@@ -121,7 +121,7 @@ bin/spark-submit \
 --conf spark.hadoop.fs.oss.impl=org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem \
 --conf spark.hadoop.fs.oss.endpoint=oss-{{ .Values.banzaicloud.bucket.location }}.aliyuncs.com \
 {{- else if eq $cloudProvider "oracle"}}
---conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
+--conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}@{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "oracleNamespace" }}" \
 --conf spark.hadoop.fs.oci.client.hostname=https://objectstorage.{{ .Values.banzaicloud.bucket.location }}.oraclecloud.com \
 --conf spark.hadoop.fs.oci.client.auth.tenantId=<tenancy_ocid> \
 --conf spark.hadoop.fs.oci.client.auth.userId=<user_ocid> \

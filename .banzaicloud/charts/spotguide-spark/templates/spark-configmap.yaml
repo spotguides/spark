@@ -47,13 +47,14 @@ data:
 
     {{- else if eq $cloudProvider "oracle" }}
 
-    spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/"
+    spark.eventLog.dir=oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}@{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "oracleNamespace" }}
     spark.hadoop.fs.oci.client.hostname=https://objectstorage.{{ .Values.banzaicloud.bucket.location }}.oraclecloud.com
     spark.hadoop.fs.oci.client.auth.tenantId=$tenancy_ocid
     spark.hadoop.fs.oci.client.auth.userId=$user_ocid
     spark.hadoop.fs.oci.client.auth.fingerprint=$api_key_fingerprint
     spark.hadoop.fs.oci.client.auth.pemfilepath=/opt/spark/conf/secret/api_key
-
+    spark.kubernetes.driver.secrets.{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}=/opt/spark/conf/secret
+    spark.kubernetes.executor.secrets.{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}=/opt/spark/conf/secret
     {{- else if eq $cloudProvider "azure"}}
 
     spark.hadoop.fs.azure.account.key.$storageAccount.blob.core.windows.net=$accessKey
