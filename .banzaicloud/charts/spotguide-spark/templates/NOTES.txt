@@ -17,13 +17,33 @@ cd spark-{{ .Values.banzaicloud.spark.version }}-bin-spark-{{$sparkVersion}}/
 ```
 ### Spark Submit
 
-#### Client mode
+### `In-cluster mode` (Cluster mode - spark-submit launched from inside of the K8s cluster)
 
-[Launch spark-submit from inside the cluster](/pipeline/api/v1/orgs/{{ $.Values.banzaicloud.organization.name }}/clusters/{{ .Values.banzaicloud.cluster.id }}/proxy/api/v1/namespaces/{{ .Release.Namespace }}/services/{{ template "fullname" . }}:8090/proxy)
+[Open Spark Console](/pipeline/api/v1/orgs/{{ $.Values.banzaicloud.organization.name }}/clusters/{{ .Values.banzaicloud.cluster.id }}/proxy/api/v1/namespaces/{{ .Release.Namespace }}/services/{{ template "fullname" . }}:8090/proxy)
 
-#### Cluster mode
+```
+/opt/spark/bin/spark-submit \
+--master k8s://$KUBERNETES_SERVICE_HOST \
+--deploy-mode cluster \
+--conf spark.app.name=spark-example \
+--conf spark.kubernetes.driver.label.app=spark-example \
+--conf spark.kubernetes.executor.label.app=spark-example \
+{{- if eq .Values.banzaicloud.interpreter "Scala" }}
+--class org.apache.spark.examples.SparkPi \
+local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
+{{- else if eq .Values.banzaicloud.interpreter "Python" }}
+--conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
+--py-files local:///opt/spark/examples/src/main/python/pi.py \
+local:///opt/spark/examples/src/main/python/pi.py
+{{- else if eq .Values.banzaicloud.interpreter "R" }}
+local:///opt/spark/examples/src/main/r/dataframe.R
+{{- end }}
 
-To lauch spark-submit from outside of the cluster the below mentioned commands the kubernetes config needs to be set properly. To do that run the following commands:
+```
+
+### `Ext-cluster mode` (Cluster mode - spark-submit launched from outside of the K8s cluster)
+
+To launch `spark-submit` from outside of the cluster the Kubernetes config needs to be set properly. To do that run the following commands:
 
 ### Get the Kubernetes config
 Download the cluster config from the cluster details page:
@@ -54,8 +74,6 @@ Search for `To install aws-iam-authenticator for Amazon EKS`.
 
 Small tool which interacts with your Kubernetes cluster must be installed. Please follow the following page to install it https://kubernetes.io/docs/tasks/tools/install-kubectl/
 
-{{- if and (not (eq .Values.banzaicloud.cluster.distribution "gke")) (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
-
 {{- if .Values.historyServer.enabled }}
 
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
@@ -84,7 +102,13 @@ Spark-submit requires your Oracle <tenancy_ocid/user_ocid/api_key_fingerprint> t
 
 {{- end}}
 
+Then submit an example spark application using the following command:
+
 ```
+{{- if  eq (.Values.banzaicloud.cluster.distribution) "eks" }}
+AWS_ACCESS_KEY_ID=$(echo $KUBECONFIG | xargs cat | awk '/AWS_ACCESS_KEY_ID/ { getline; print $2 }') \
+AWS_SECRET_ACCESS_KEY=$(echo $KUBECONFIG | xargs cat | awk '/AWS_SECRET_ACCESS_KEY/ { getline; print $2 }') \
+{{- end}}
 bin/spark-submit \
 --master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
 --deploy-mode cluster \
@@ -150,172 +174,6 @@ local:///opt/spark/examples/src/main/r/dataframe.R
 {{- end }}
 
 ```
-
-{{- end }}
-
-{{- if eq (.Values.banzaicloud.cluster.distribution) "gke" }}
-
-{{- if .Values.historyServer.enabled }}
-
-{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
-{{- if  eq $cloudProvider "azure" }}
-Spark-submit requires your Azure <storageAccountKey secret> to be able to store event logs in Azure, you can find it in this secret below:
-
-- [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
-{{- end}}
-{{- if  eq $cloudProvider "amazon" }}
-Spark-submit requires your Amazon <amazon access key/secret> to be able to store event logs in S3, you can find it in this secret below:
-
-- [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
-{{- end}}
-{{- end}}
-
-```
-bin/spark-submit \
---master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
---deploy-mode cluster \
---conf spark.app.name=spark-example \
---conf spark.kubernetes.driver.label.app=spark-example \
---conf spark.kubernetes.executor.label.app=spark-example \
---conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
---conf spark.local.dir=/tmp/spark-locals \
---conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ template "sparkImageName" . }}  \
---conf spark.kubernetes.namespace={{ .Release.Namespace }} \
-{{- if .Values.banzaicloud.security.enabled }}
---conf spark.authenticate=true \
---conf spark.network.crypto.enabled=true \
---conf spark.io.encryption.enabled=true \
-{{- end }}
-{{- if .Values.spark.monitoring.enabled}}
---conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
---conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
-{{- end}}
-{{- if .Values.historyServer.enabled }}
-{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
---conf spark.eventLog.enabled=true \
-{{- if  eq $cloudProvider "amazon" }}
---conf spark.hadoop.fs.s3a.access.key=<amazon access key> \
---conf spark.hadoop.fs.s3a.secret.key=<amazon access secret> \
---conf spark.eventLog.dir="s3a://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
-{{- else if eq $cloudProvider "google"}}
---conf spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
-{{- else if eq $cloudProvider "alibaba"}}
---conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
-{{- else if eq $cloudProvider "oracle"}}
---conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
-{{- else if eq $cloudProvider "azure"}}
---conf spark.hadoop.fs.azure.account.key.{{ .Values.banzaicloud.bucket.storageAccountName }}.blob.core.windows.net=<storageAccountKey secret> \
-{{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
---conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
-{{- end}}
-{{- end}}
-{{- if .Values.spark.monitoring.enabled}}
---conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
-{{- end}}
-{{- if eq .Values.banzaicloud.interpreter "Scala" }}
---class org.apache.spark.examples.SparkPi \
-local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
-{{- else if eq .Values.banzaicloud.interpreter "Python" }}
---conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
---py-files local:///opt/spark/examples/src/main/python/pi.py \
-local:///opt/spark/examples/src/main/python/pi.py
-{{- else if eq .Values.banzaicloud.interpreter "R" }}
-local:///opt/spark/examples/src/main/r/dataframe.R
-{{- end }}
-```
-
-{{- end }}
-
-{{- if  eq (.Values.banzaicloud.cluster.distribution) "eks" }}
-
-You need to install jq a small json parser tool to your computer to make this work:
-
-On Ubuntu/Debian:
-```
-sudo apt-get install jq
-```
-
-On Mac:
-```
-brew install jq
-```
-{{- if .Values.historyServer.enabled }}
-
-{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
-{{- if  eq $cloudProvider "azure" }}
-Spark-submit requires your Azure <storageAccountKey secret> to be able to store event logs in Azure, you can find it in this secret below:
-
-- [StorageAccountKey secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.bucket.storageAccountName }}-key)
-{{- end}}
-{{- if  eq $cloudProvider "amazon" }}
-Spark-submit requires your Amazon <amazon access key/secret> to be able to store event logs in S3, you can find it in this secret below:
-
-- [Amazon S3 secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "pipelineSecretName" }})
-{{- end}}
-{{- end}}
-
-Then submit an example spark application using the following command:
-
-```
-AWS_ACCESS_KEY_ID=$(echo $KUBECONFIG | xargs cat | awk '/AWS_ACCESS_KEY_ID/ { getline; print $2 }') \
-AWS_SECRET_ACCESS_KEY=$(echo $KUBECONFIG | xargs cat | awk '/AWS_SECRET_ACCESS_KEY/ { getline; print $2 }') \
-bin/spark-submit \
---master k8s://$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ") \
---deploy-mode cluster \
---conf spark.app.name=spark-example \
---conf spark.kubernetes.driver.label.app=spark-example \
---conf spark.kubernetes.executor.label.app=spark-example \
---conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
---conf spark.local.dir=/tmp/spark-locals \
---conf spark.kubernetes.docker.image.pullPolicy=Always \
---conf spark.kubernetes.container.image={{ template "sparkImageName" . }}  \
---conf spark.kubernetes.namespace={{ .Release.Namespace }} \
---conf spark.kubernetes.authenticate.submission.oauthToken="$(aws-iam-authenticator  token -i  {{ .Values.banzaicloud.cluster.name }} | jq .status.token -r)" \
-{{- if .Values.spark.monitoring.enabled}}
---conf spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
---conf spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring \
-{{- end}}
-{{- if .Values.historyServer.enabled }}
-{{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
---conf spark.eventLog.enabled=true \
-{{- if  eq $cloudProvider "amazon" }}
---conf spark.eventLog.dir="s3a://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
---conf spark.hadoop.fs.s3a.access.key=<amazon access key> \
---conf spark.hadoop.fs.s3a.secret.key=<amazon access secret> \
-{{- else if eq $cloudProvider "google"}}
---conf spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
-{{- else if eq $cloudProvider "alibaba"}}
---conf spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//" \
-{{- else if eq $cloudProvider "oracle"}}
---conf spark.eventLog.dir="oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/" \
-{{- else if eq $cloudProvider "azure"}}
---conf spark.hadoop.fs.azure.account.key.{{ .Values.banzaicloud.bucket.storageAccountName }}.blob.core.windows.net=<storageAccountKey secret> \
-{{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
---conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
-{{- end}}
-{{- end}}
-{{- if .Values.banzaicloud.security.enabled }}
---conf spark.authenticate=true \
---conf spark.network.crypto.enabled=true \
---conf spark.io.encryption.enabled=true \
-{{- end }}
-{{- if .Values.spark.monitoring.enabled}}
---conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
-{{- end}}
-{{- if eq .Values.banzaicloud.interpreter "Scala" }}
---class org.apache.spark.examples.SparkPi \
-local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
-{{- else if eq .Values.banzaicloud.interpreter "Python" }}
---conf spark.kubernetes.pyspark.pythonVersion="{{ .Values.banzaicloud.pythonVersion }}" \
---py-files local:///opt/spark/examples/src/main/python/pi.py \
-local:///opt/spark/examples/src/main/python/pi.py
-{{- else if eq .Values.banzaicloud.interpreter "R" }}
-local:///opt/spark/examples/src/main/r/dataframe.R
-{{- end }}
-```
-
-{{- end }}
 
 Currently Spark on Kubernetes does not support uploading your application from your computer using `spark submit`, either your application must
 hosted in a remote location like s3 or http server.
