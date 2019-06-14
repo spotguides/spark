@@ -22,32 +22,32 @@ data:
     {{- end }}
     {{- if .Values.historyServer.enabled }}
     {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+    {{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
     spark.eventLog.enabled=true
 
     {{- if  eq $cloudProvider "amazon" }}
 
-    spark.eventLog.dir="s3a://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//"
+    spark.eventLog.dir={{- printf "oss://%s//" $logDir }}
     spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY_ID
     spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_ACCESS_KEY
 
-
     {{- else if eq $cloudProvider "google"}}
 
-    spark.eventLog.dir="gs://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}/"
+    spark.eventLog.dir={{- printf "gs://%s/" $logDir }}
     spark.hadoop.google.cloud.auth.service.account.enable=true
     spark.hadoop.google.cloud.auth.service.account.json.keyfile=/opt/spark/conf/secret/google.json
 
     {{- else if eq $cloudProvider "alibaba"}}
 
-    spark.eventLog.dir="oss://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}//"
+    spark.eventLog.dir={{- printf "oss://%s//" $logDir }}
     spark.hadoop.fs.oss.accessKeyId=$ALIBABA_ACCESS_KEY_ID
     spark.hadoop.fs.oss.accessKeySecret=$ALIBABA_ACCESS_KEY_SECRET
     spark.hadoop.fs.oss.impl=org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem
     spark.hadoop.fs.oss.endpoint=oss-{{ .Values.banzaicloud.bucket.location }}.aliyuncs.com
 
     {{- else if eq $cloudProvider "oracle" }}
-
-    spark.eventLog.dir=oci://{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory" }}@{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "oracleNamespace" }}
+    {{- $namespace := index .Values "spark" "spark-hs" "sparkEventLogStorage" "oracleNamespace"}}
+    spark.eventLog.dir={{- printf "oci://%s@%s" $logDir $namespace }}
     spark.hadoop.fs.oci.client.hostname=https://objectstorage.{{ .Values.banzaicloud.bucket.location }}.oraclecloud.com
     spark.hadoop.fs.oci.client.auth.tenantId=$tenancy_ocid
     spark.hadoop.fs.oci.client.auth.userId=$user_ocid
@@ -58,7 +58,6 @@ data:
     {{- else if eq $cloudProvider "azure"}}
 
     spark.hadoop.fs.azure.account.key.$storageAccount.blob.core.windows.net=$accessKey
-    {{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
     spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }}
 
     {{- end}}
