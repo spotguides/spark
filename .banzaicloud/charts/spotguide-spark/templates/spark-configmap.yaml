@@ -27,7 +27,7 @@ data:
 
     {{- if  eq $cloudProvider "amazon" }}
 
-    spark.eventLog.dir={{- printf "oss://%s//" $logDir }}
+    spark.eventLog.dir={{- printf "s3a://%s//" $logDir }}
     spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY_ID
     spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_ACCESS_KEY
 

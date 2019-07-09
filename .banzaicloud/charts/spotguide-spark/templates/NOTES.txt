@@ -3,9 +3,11 @@ Congratulations, you have deployed Spark Spotguide to Kubernetes! Your release i
 > Please note that if security scan enabled for your cluster, running spark for the first time may take longer than usual!
 Please be patient.
 
-## `In-cluster mode` (Cluster mode - spark-submit launched from inside of the K8s cluster)
+## Launch Spark Application from Spark Console
 
 [Open Spark Console](/pipeline/api/v1/orgs/{{ $.Values.banzaicloud.organization.id }}/clusters/{{ .Values.banzaicloud.cluster.id }}/proxy/api/v1/namespaces/{{ .Release.Namespace }}/services/{{ template "fullname" . }}:8090/proxy)
+
+Then submit an example spark application using the following command:
 
 ```
 /opt/spark/bin/spark-submit \
@@ -27,7 +29,7 @@ local:///opt/spark/examples/src/main/r/dataframe.R
 
 ```
 
-## `Ext-cluster mode` (Cluster mode - spark-submit launched from outside of the K8s cluster)
+## Launch Spark Application from your local machine
 
 ### Spark distribution
 
@@ -73,7 +75,7 @@ Search for `To install aws-iam-authenticator for Amazon EKS`.
 
 {{- end }}
 
-Small tool which interacts with your Kubernetes cluster must be installed. Please follow the following page to install it https://kubernetes.io/docs/tasks/tools/install-kubectl/
+Small tool which interacts with your Kubernetes cluster must be installed. Please follow the following page to install it https://kubernetes.io/docs/tasks/tools/install-kubectl/.
 
 {{- if .Values.historyServer.enabled }}
 
