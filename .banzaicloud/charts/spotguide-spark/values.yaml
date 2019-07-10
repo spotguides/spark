@@ -17,6 +17,8 @@
        num:
    bucket:
      storageAccountName:
+     location:
+     namespace:
    secret:
      historyServer:
        name:

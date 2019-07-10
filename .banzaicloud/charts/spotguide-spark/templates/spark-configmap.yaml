@@ -1,0 +1,69 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ template "fullname" . }}-spark-config
+data:
+  spark-defaults.conf: |-
+    spark.kubernetes.driver.label.app=spark-example
+    spark.kubernetes.executor.label.app=spark-example
+    spark.kubernetes.authenticate.driver.serviceAccountName=spark
+    spark.local.dir=/tmp/spark-locals
+    spark.kubernetes.docker.image.pullPolicy=Always
+    spark.kubernetes.container.image={{ template "sparkImageName" . }}
+    spark.kubernetes.namespace={{ .Release.Namespace }}
+    {{- if .Values.banzaicloud.security.enabled }}
+    spark.authenticate=true
+    spark.network.crypto.enabled=true
+    spark.io.encryption.enabled=true
+    {{- end }}
+    {{- if .Values.spark.monitoring.enabled}}
+    spark.kubernetes.driver.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring
+    spark.kubernetes.executor.secrets.spark-{{ include "repo-name" . }}=/opt/spark/conf/monitoring
+    {{- end }}
+    {{- if .Values.historyServer.enabled }}
+    {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+    {{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
+    spark.eventLog.enabled=true
+
+    {{- if  eq $cloudProvider "amazon" }}
+
+    spark.eventLog.dir={{- printf "s3a://%s//" $logDir }}
+    spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY_ID
+    spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_ACCESS_KEY
+
+    {{- else if eq $cloudProvider "google"}}
+
+    spark.eventLog.dir={{- printf "gs://%s/" $logDir }}
+    spark.hadoop.google.cloud.auth.service.account.enable=true
+    spark.kubernetes.driver.secrets.{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}=/opt/spark/conf/secret
+    spark.kubernetes.executor.secrets.{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}=/opt/spark/conf/secret
+    spark.hadoop.google.cloud.auth.service.account.json.keyfile=/opt/spark/conf/secret/google.json
+
+    {{- else if eq $cloudProvider "alibaba"}}
+
+    spark.eventLog.dir={{- printf "oss://%s//" $logDir }}
+    spark.hadoop.fs.oss.accessKeyId=$ALIBABA_ACCESS_KEY_ID
+    spark.hadoop.fs.oss.accessKeySecret=$ALIBABA_ACCESS_KEY_SECRET
+    spark.hadoop.fs.oss.impl=org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem
+    spark.hadoop.fs.oss.endpoint=oss-{{ .Values.banzaicloud.bucket.location }}.aliyuncs.com
+
+    {{- else if eq $cloudProvider "oracle" }}
+    {{- $namespace := index .Values "spark" "spark-hs" "sparkEventLogStorage" "oracleNamespace"}}
+    spark.eventLog.dir={{- printf "oci://%s@%s" $logDir $namespace }}
+    spark.hadoop.fs.oci.client.hostname=https://objectstorage.{{ .Values.banzaicloud.bucket.location }}.oraclecloud.com
+    spark.hadoop.fs.oci.client.auth.tenantId=$tenancy_ocid
+    spark.hadoop.fs.oci.client.auth.userId=$user_ocid
+    spark.hadoop.fs.oci.client.auth.fingerprint=$api_key_fingerprint
+    spark.hadoop.fs.oci.client.auth.pemfilepath=/opt/spark/conf/secret/api_key
+    spark.kubernetes.driver.secrets.{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}=/opt/spark/conf/secret
+    spark.kubernetes.executor.secrets.{{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}=/opt/spark/conf/secret
+    {{- else if eq $cloudProvider "azure"}}
+
+    spark.hadoop.fs.azure.account.key.$storageAccount.blob.core.windows.net=$accessKey
+    spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }}
+
+    {{- end}}
+    {{- end}}
+    {{- if .Values.spark.monitoring.enabled}}
+    spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties
+    {{- end}}
