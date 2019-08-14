@@ -1,4 +1,8 @@
+{{- if .Values.historyServer.enabled }}
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+{{- else }}
+{{- $cloudProvider := "n/a" }}
+{{- end }}
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
