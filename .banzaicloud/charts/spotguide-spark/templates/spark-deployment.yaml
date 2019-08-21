@@ -27,9 +27,11 @@ spec:
       - name: {{ .Chart.Name }}-init-config
         image: "{{ template "sparkImageName" . }}"
         imagePullPolicy: Always
+        {{- if .Values.historyServer.enabled }}
         envFrom:
           - secretRef:
               name: {{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}
+        {{- end }}      
         command:
           - '/bin/sh'
           - '-c'
