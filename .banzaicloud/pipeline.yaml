@@ -65,7 +65,6 @@ pipeline:
             enabled:
             jmxCollector:
             metricsProperties:
-          {{{{- if .pipeline.deploy_application.deployment.values.historyServer.enabled }}}}
           spark-hs:
             image:
               {{{{- if eq .pipeline.deploy_application.deployment.values.banzaicloud.spark.version "2.3.2" }}}}
@@ -100,5 +99,4 @@ pipeline:
                 traefik.ingress.kubernetes.io/auth-type: basic
                 traefik.ingress.kubernetes.io/auth-secret: '{{ .CICD_REPO_NAME }}-hs-auth'
                 ingress.kubernetes.io/ssl-redirect: 'true'
-            {{{{- end }}}}
-          {{{- end }}}}
+            {{{{- end }}}}          
