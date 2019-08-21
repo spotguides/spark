@@ -161,6 +161,8 @@ bin/spark-submit \
 {{- $logDir := index .Values "spark" "spark-hs" "sparkEventLogStorage" "logDirectory"}}
 --conf spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }} \
 {{- end}}
+{{- else }}
+spark.eventLog.enabled=false
 {{- end}}
 {{- if .Values.spark.monitoring.enabled }}
 --conf spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties \
