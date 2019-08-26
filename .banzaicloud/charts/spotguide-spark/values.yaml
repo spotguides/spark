@@ -14,7 +14,7 @@
        repositoryPrefix: banzaicloud
        tag:
      executor:
-       num:
+       num: 2
    bucket:
      storageAccountName:
      location:

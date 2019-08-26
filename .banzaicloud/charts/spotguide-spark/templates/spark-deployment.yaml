@@ -1,4 +1,8 @@
+{{- $cloudProvider := "n/a" }}
+
+{{- if .Values.historyServer.enabled }}
 {{- $cloudProvider := index .Values "spark" "spark-hs" "sparkEventLogStorage" "cloudProvider" }}
+{{- end }}
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -23,9 +27,11 @@ spec:
       - name: {{ .Chart.Name }}-init-config
         image: "{{ template "sparkImageName" . }}"
         imagePullPolicy: Always
+        {{- if .Values.historyServer.enabled }}
         envFrom:
           - secretRef:
               name: {{ index .Values "spark" "spark-hs" "sparkEventLogStorage" "secretName" }}
+        {{- end }}      
         command:
           - '/bin/sh'
           - '-c'

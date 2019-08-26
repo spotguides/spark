@@ -52,12 +52,14 @@ pipeline:
               {{{{- end }}}}
             executor:
               num:
+          {{{{- if .pipeline.deploy_application.deployment.values.historyServer.enabled }}}}
           bucket:
             storageAccountName:
             location:
           secret:
             historyServer:
               name:
+          {{{{- end }}}}
         spark:
           monitoring:
             enabled:
@@ -97,4 +99,4 @@ pipeline:
                 traefik.ingress.kubernetes.io/auth-type: basic
                 traefik.ingress.kubernetes.io/auth-secret: '{{ .CICD_REPO_NAME }}-hs-auth'
                 ingress.kubernetes.io/ssl-redirect: 'true'
-            {{{{- end }}}}
+            {{{{- end }}}}          

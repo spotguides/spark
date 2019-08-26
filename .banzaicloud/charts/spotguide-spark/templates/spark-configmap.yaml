@@ -63,6 +63,8 @@ data:
     spark.eventLog.dir={{- printf "wasb://%s@%s.blob.core.windows.net" $logDir .Values.banzaicloud.bucket.storageAccountName }}
 
     {{- end}}
+    {{- else }}
+    spark.eventLog.enabled=false
     {{- end}}
     {{- if .Values.spark.monitoring.enabled}}
     spark.metrics.conf=/opt/spark/conf/monitoring/metrics.properties
