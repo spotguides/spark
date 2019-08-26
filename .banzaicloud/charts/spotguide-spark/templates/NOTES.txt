@@ -16,6 +16,7 @@ Then submit an example spark application using the following command:
 --conf spark.app.name=spark-example \
 --conf spark.kubernetes.driver.label.app=spark-example \
 --conf spark.kubernetes.executor.label.app=spark-example \
+--conf spark.executor.instances={{ .Values.banzaicloud.spark.executor.num }} \
 {{- if eq .Values.banzaicloud.interpreter "Scala" }}
 --class org.apache.spark.examples.SparkPi \
 local:///opt/spark/examples/target/scala-2.11/jars/spark-examples_2.11-{{ .Values.banzaicloud.spark.version }}.jar 5000
@@ -118,6 +119,7 @@ bin/spark-submit \
 --conf spark.app.name=spark-example \
 --conf spark.kubernetes.driver.label.app=spark-example \
 --conf spark.kubernetes.executor.label.app=spark-example \
+--conf spark.executor.instances={{ .Values.banzaicloud.spark.executor.num }} \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.local.dir=/tmp/spark-locals \
 --conf spark.kubernetes.docker.image.pullPolicy=Always \
