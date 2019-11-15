@@ -26,7 +26,7 @@ pipeline:
 {{{{- end }}}}
 
   package_application:
-    image: lachlanevenson/k8s-helm:latest
+    image: lachlanevenson/k8s-helm:v2.16.1
     commands:
       - helm init -c
       - helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
