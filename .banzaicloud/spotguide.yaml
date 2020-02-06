@@ -101,8 +101,8 @@ questions:
     # Enable Prometheus for all instances by class name
     *.sink.prometheus.class=com.banzaicloud.spark.metrics.sink.PrometheusSink
     # Prometheus pushgateway address
-    *.sink.prometheus.pushgateway-address=prometheus-pushgateway.pipeline-system:9091
-    *.sink.prometheus.pushgateway-enable-timestamp=true
+    *.sink.prometheus.pushgateway-address=pushgateway-prometheus-pushgateway.pipeline-system.svc:9091
+    *.sink.prometheus.pushgateway-enable-timestamp=false
     *.sink.prometheus.enable-dropwizard-collector=true
     *.sink.prometheus.enable-jmx-collector=false
   group: Spark
